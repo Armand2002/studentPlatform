@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--bg: 255 255 255;
+	--fg: 17 24 39; /* gray-900 */
+	--muted: 243 244 246; /* gray-100 */
+	--primary: 37 99 235; /* blue-600 */
+}
+
+html, body, #__next {
+	height: 100%;
+}
+
+body {
+	color: rgb(var(--fg));
+	background: rgb(var(--bg));
+}
+
+.container-responsive {
+	@apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
