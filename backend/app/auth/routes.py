@@ -11,14 +11,14 @@ from app.auth.dependencies import get_current_user
 router = APIRouter()
 
 @router.post("/register", response_model=schemas.User)
-async def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
+def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
     """Register a new user"""
-    return await services.create_user(db, user_data)
+    return services.create_user(db, user_data)
 
 @router.post("/login", response_model=schemas.Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login user and return tokens"""
-    return await services.authenticate_user(db, form_data.username, form_data.password)
+    return services.authenticate_user(db, form_data.username, form_data.password)
 
 @router.post("/refresh", response_model=schemas.Token)
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
