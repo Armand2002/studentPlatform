@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-	--bg: 255 255 255;
-	--fg: 17 24 39; /* gray-900 */
-	--muted: 243 244 246; /* gray-100 */
-	--primary: 37 99 235; /* blue-600 */
+    --bg: 255 255 255; /* white */
+    --fg: 17 24 39; /* near-black for text */
+    --muted: 243 244 246; /* gray-100 */
+    --primary: 14 165 233; /* sky-500 */
 }
 
 html, body, #__next {
@@ -14,8 +14,28 @@ html, body, #__next {
 }
 
 body {
-	color: rgb(var(--fg));
-	background: rgb(var(--bg));
+    color: rgb(var(--fg));
+    background: rgb(var(--bg));
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 600ms ease forwards;
 }
 
 .container-responsive {
