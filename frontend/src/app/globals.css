@@ -38,6 +38,17 @@ body {
   animation: fade-in-up 600ms ease forwards;
 }
 
+@layer utilities {
+  .container-app { @apply w-full px-4 sm:px-6 lg:px-8; }
+  .section-wrap { @apply w-full py-10 sm:py-12; }
+  .grid-resp-3 { @apply grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3; }
+  .grid-resp-4 { @apply grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4; }
+  .card-base { @apply rounded-xl border bg-white shadow-card; }
+  .text-section { @apply text-sm sm:text-base text-gray-700; }
+  .title-section { @apply text-xl sm:text-2xl font-bold text-gray-900; }
+  .bg-primary-gradient { @apply bg-gradient-to-br from-primary-800 via-primary-600 to-primary-500; }
+}
+
 .container-responsive {
 	@apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }

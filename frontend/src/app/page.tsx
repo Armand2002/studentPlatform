@@ -11,13 +11,13 @@ export default function HomePage() {
         <HeroSection />
 
         <section className="w-full bg-white">
-          <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
+          <div className="container-app section-wrap">
             <FeaturesSection />
           </div>
         </section>
 
         <section className="w-full bg-white">
-          <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
+          <div className="container-app section-wrap">
             <HowItWorksSection />
           </div>
         </section>

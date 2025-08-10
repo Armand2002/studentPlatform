@@ -9,13 +9,13 @@ export default function TutorDashboardPage() {
   return (
     <RequireAuth>
       {user?.role === 'tutor' ? (
-        <div className="space-y-6">
+        <div className="container-app space-y-6">
           <div>
             <h1 className="text-2xl font-semibold text-blue-900">Tutor Dashboard</h1>
             <p className="text-blue-600">Gestisci calendario e materiali.</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <BookingCalendarWidget />
             <QuickActionsWidget />
           </div>

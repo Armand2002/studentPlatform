@@ -11,13 +11,13 @@ export default function StudentDashboardPage() {
   return (
     <RequireAuth>
       {user?.role === 'student' ? (
-        <div className="space-y-6">
+        <div className="container-app space-y-6">
           <div>
             <h1 className="text-2xl font-semibold text-blue-900">Student Dashboard</h1>
             <p className="text-blue-600">Benvenuto! Ecco un riepilogo rapido.</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
             <ActivePackagesWidget />
             <UpcomingLessonsWidget />
             <QuickActionsWidget />
