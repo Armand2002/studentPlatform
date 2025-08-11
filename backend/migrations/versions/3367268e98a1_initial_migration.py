@@ -167,6 +167,22 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_bookings_id'), 'bookings', ['id'], unique=False)
+    # package_resource_links
+    op.create_table(
+        'package_resource_links',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('package_id', sa.Integer(), nullable=False),
+        sa.Column('title', sa.String(), nullable=False),
+        sa.Column('url', sa.Text(), nullable=False),
+        sa.Column('provider', sa.String(), nullable=True),
+        sa.Column('is_public', sa.Boolean(), nullable=False, server_default=sa.text('true')),
+        sa.Column('created_at', sa.DateTime(), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(['package_id'], ['packages.id'], ),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_package_resource_links_id'), 'package_resource_links', ['id'], unique=False)
+    op.create_index(op.f('ix_package_resource_links_package_id'), 'package_resource_links', ['package_id'], unique=False)
     # ### end Alembic commands ###
 
 
@@ -193,4 +209,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    op.drop_index(op.f('ix_package_resource_links_package_id'), table_name='package_resource_links')
+    op.drop_index(op.f('ix_package_resource_links_id'), table_name='package_resource_links')
+    op.drop_table('package_resource_links')
     # ### end Alembic commands ###

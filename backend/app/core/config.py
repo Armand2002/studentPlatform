@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: Optional[str] = None
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
     
+    # Dev utilities
+    AUTO_SEED: bool = False
+    
     class Config:
         env_file = ".env"
         case_sensitive = True

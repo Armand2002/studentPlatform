@@ -1,7 +1,7 @@
 "use client"
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 type RoleAwareNavLinksProps = Readonly<{ role: 'student' | 'tutor' | 'admin' | null }>
@@ -40,6 +40,10 @@ export default function Header() {
     const pathname = usePathname()
     const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register')
 
+    // Hydration guard: evita mismatch SSR/CSR su href dinamici
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => { setMounted(true) }, [])
+
 	return (
         <header className={isAuthPage ? "sticky top-0 z-40 border-b bg-white" : "sticky top-0 z-40 border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60"}>
             <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -67,6 +71,7 @@ export default function Header() {
                         </>
                     ) : (
                         <>
+                            {/* href stabili prima del mount per evitare mismatch */}
                             <Link href="/login" className="text-sm text-gray-700 hover:text-gray-900">Accedi</Link>
                             <Link href="/register" className="inline-flex h-9 items-center rounded-md bg-primary-500 px-4 text-white hover:bg-primary-600">Registrati</Link>
                         </>

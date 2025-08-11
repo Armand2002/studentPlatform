@@ -2,7 +2,7 @@
 Package schemas for request/response validation
 """
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -48,6 +48,30 @@ class Package(PackageBase):
     tutor_id: int
     created_at: datetime
     updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class PackageResourceLinkBase(BaseModel):
+    title: str
+    url: str
+    provider: Optional[str] = None
+    is_public: bool = True
+
+class PackageResourceLinkCreate(PackageResourceLinkBase):
+    package_id: int
+
+class PackageResourceLinkUpdate(BaseModel):
+    title: Optional[str] = None
+    url: Optional[str] = None
+    provider: Optional[str] = None
+    is_public: Optional[bool] = None
+
+class PackageResourceLink(PackageResourceLinkBase):
+    id: int
+    package_id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -69,3 +93,4 @@ class PackageWithTutor(Package):
 
 class PackagePurchaseWithDetails(PackagePurchase):
     package: Package
+    links: Optional[List[PackageResourceLink]] = None

@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import engine
+from app.core.database import SessionLocal
 
 # Create FastAPI app
 app = FastAPI(
@@ -30,6 +31,8 @@ from app.packages.routes import router as packages_router
 from app.slots.routes import router as slots_router
 from app.analytics.routes import router as analytics_router
 from app.admin.routes import router as admin_router
+from app.core.config import settings
+from app.utils.seed import seed_users
 
 # CORS middleware
 app.add_middleware(
@@ -61,3 +64,12 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+@app.on_event("startup")
+def startup_seed():
+    if settings.AUTO_SEED:
+        db = SessionLocal()
+        try:
+            seed_users(db)
+        finally:
+            db.close()

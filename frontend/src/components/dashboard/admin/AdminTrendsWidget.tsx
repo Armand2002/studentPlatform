@@ -14,19 +14,19 @@ function daysAgo(date: Date, n: number) {
 export default function AdminTrendsWidget() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [completed, setCompleted] = useState<Booking[]>([])
-  const [upcoming, setUpcoming] = useState<Booking[]>([])
+  const [labels, setLabels] = useState<string[]>([])
+  const [comp, setComp] = useState<number[]>([])
+  const [up, setUp] = useState<number[]>([])
 
   async function load() {
     setLoading(true)
     setError(null)
     try {
-      const [c, u] = await Promise.all([
-        api.get('/api/bookings/completed', { params: { limit: 1000 } }),
-        api.get('/api/bookings/upcoming', { params: { limit: 1000 } }),
-      ])
-      setCompleted(c.data as Booking[])
-      setUpcoming(u.data as Booking[])
+      const res = await api.get('/api/analytics/trends', { params: { days: 14 } })
+      const data = res.data as { labels: string[]; completed: number[]; upcoming: number[] }
+      setLabels(data.labels)
+      setComp(data.completed)
+      setUp(data.upcoming)
     } catch {
       setError('Impossibile caricare i trend')
     } finally { setLoading(false) }
@@ -34,21 +34,7 @@ export default function AdminTrendsWidget() {
 
   useEffect(() => { load() }, [])
 
-  const series = useMemo(() => {
-    // ultimi 14 giorni
-    const today = new Date(); today.setHours(0,0,0,0)
-    const labels: string[] = []
-    const comp: number[] = []
-    const up: number[] = []
-    for (let i = 13; i >= 0; i -= 1) {
-      const d = daysAgo(today, i)
-      const key = d.toISOString().slice(0,10)
-      labels.push(key.slice(5))
-      comp.push(completed.filter(b => new Date(b.end_time).toISOString().slice(0,10) === key).length)
-      up.push(upcoming.filter(b => new Date(b.start_time).toISOString().slice(0,10) === key).length)
-    }
-    return { labels, comp, up }
-  }, [completed, upcoming])
+  const series = useMemo(() => ({ labels, comp, up }), [labels, comp, up])
 
   const maxVal = Math.max(1, ...series.comp, ...series.up)
 

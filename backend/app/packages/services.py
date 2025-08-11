@@ -93,6 +93,37 @@ class PackageService:
         """Get package with tutor information"""
         return db.query(models.Package).filter(models.Package.id == package_id).first()
 
+    # Links
+    @staticmethod
+    async def add_resource_link(db: Session, link_data: schemas.PackageResourceLinkCreate) -> models.PackageResourceLink:
+        link = models.PackageResourceLink(
+            package_id=link_data.package_id,
+            title=link_data.title,
+            url=link_data.url,
+            provider=link_data.provider,
+            is_public=link_data.is_public,
+        )
+        db.add(link)
+        db.commit()
+        db.refresh(link)
+        return link
+
+    @staticmethod
+    async def get_package_links(db: Session, package_id: int, public_only: bool = False) -> List[models.PackageResourceLink]:
+        q = db.query(models.PackageResourceLink).filter(models.PackageResourceLink.package_id == package_id)
+        if public_only:
+            q = q.filter(models.PackageResourceLink.is_public == True)
+        return q.order_by(models.PackageResourceLink.created_at.desc()).all()
+
+    @staticmethod
+    async def delete_resource_link(db: Session, link_id: int) -> bool:
+        link = db.query(models.PackageResourceLink).filter(models.PackageResourceLink.id == link_id).first()
+        if not link:
+            return False
+        db.delete(link)
+        db.commit()
+        return True
+
 class PackagePurchaseService:
     """Service for package purchase management"""
     

@@ -23,6 +23,7 @@ class Package(Base):
     # Relationships
     tutor = relationship("Tutor", back_populates="packages")
     purchases = relationship("PackagePurchase", back_populates="package")
+    links = relationship("PackageResourceLink", back_populates="package", cascade="all, delete-orphan")
 
 class PackagePurchase(Base):
     __tablename__ = "package_purchases"
@@ -42,3 +43,18 @@ class PackagePurchase(Base):
     student = relationship("Student", back_populates="package_purchases")
     package = relationship("Package", back_populates="purchases")
     bookings = relationship("Booking", back_populates="package_purchase")
+
+
+class PackageResourceLink(Base):
+    __tablename__ = "package_resource_links"
+
+    id = Column(Integer, primary_key=True, index=True)
+    package_id = Column(Integer, ForeignKey("packages.id"), nullable=False, index=True)
+    title = Column(String, nullable=False)
+    url = Column(Text, nullable=False)
+    provider = Column(String, nullable=True)  # onedrive, google, dropbox, mega, wetransfer, other
+    is_public = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    package = relationship("Package", back_populates="links")

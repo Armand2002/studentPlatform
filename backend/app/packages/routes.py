@@ -98,6 +98,70 @@ async def delete_package(
     success = await services.PackageService.delete_package(db, package_id)
     return {"message": "Package deleted successfully"}
 
+# Package resource links
+@router.post("/{package_id}/links", response_model=schemas.PackageResourceLink, tags=["Packages"])
+async def add_package_link(
+    package_id: int,
+    link: schemas.PackageResourceLinkBase,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Add a resource link to a package (Tutor owner or Admin)"""
+    package = await services.PackageService.get_package_by_id(db, package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    if current_user.role == UserRole.TUTOR:
+        tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
+        if not tutor or tutor.id != package.tutor_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    create_data = schemas.PackageResourceLinkCreate(package_id=package_id, **link.dict())
+    return await services.PackageService.add_resource_link(db, create_data)
+
+@router.get("/{package_id}/links", response_model=List[schemas.PackageResourceLink], tags=["Packages"])
+async def list_package_links(
+    package_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """List resource links for a package. Public links for everyone; private only for owner/admin."""
+    package = await services.PackageService.get_package_by_id(db, package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    public_only = True
+    if current_user.role == UserRole.ADMIN:
+        public_only = False
+    elif current_user.role == UserRole.TUTOR:
+        tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
+        public_only = not (tutor and tutor.id == package.tutor_id)
+    # students and others: only public
+    return await services.PackageService.get_package_links(db, package_id, public_only)
+
+@router.delete("/links/{link_id}", tags=["Packages"])
+async def delete_package_link(
+    link_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a resource link (Tutor owner or Admin)"""
+    link = db.query(models.PackageResourceLink).filter(models.PackageResourceLink.id == link_id).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    package = await services.PackageService.get_package_by_id(db, link.package_id)
+    if current_user.role == UserRole.TUTOR:
+        tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
+        if not tutor or tutor.id != package.tutor_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    success = await services.PackageService.delete_resource_link(db, link_id)
+    return {"success": success}
+
 # Package Purchase routes
 @router.post("/purchases", response_model=schemas.PackagePurchase, tags=["Package Purchases"])
 async def create_package_purchase(
