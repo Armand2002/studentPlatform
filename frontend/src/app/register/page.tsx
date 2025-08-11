@@ -44,7 +44,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <section className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-primary-gradient flex items-center">
+    <section className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-primary-gradient flex items-center justify-center">
       <div className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute -top-28 -left-32 h-72 w-72 rounded-full bg-gradient-to-br from-primary-900 to-primary-700 opacity-40 blur-3xl" />
         <div className="absolute top-1/2 -right-28 h-80 w-80 rounded-full bg-gradient-to-br from-primary-800 to-primary-600 opacity-45 blur-3xl" />
@@ -59,24 +59,24 @@ export default function RegisterPage() {
             </div>
             <form className="space-y-4" onSubmit={onSubmit}>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-900">Nome</label>
-                <input className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" placeholder="Nome" value={firstName} onChange={(e)=>setFirstName(e.target.value)} />
+                <label htmlFor="register-firstname" className="mb-1 block text-sm font-medium text-gray-900">Nome</label>
+                <input id="register-firstname" className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" placeholder="Nome" value={firstName} onChange={(e)=>setFirstName(e.target.value)} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-900">Cognome</label>
-                <input className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" placeholder="Cognome" value={lastName} onChange={(e)=>setLastName(e.target.value)} />
+                <label htmlFor="register-lastname" className="mb-1 block text-sm font-medium text-gray-900">Cognome</label>
+                <input id="register-lastname" className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" placeholder="Cognome" value={lastName} onChange={(e)=>setLastName(e.target.value)} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-900">Email</label>
-                <input className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" placeholder="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
+                <label htmlFor="register-email" className="mb-1 block text-sm font-medium text-gray-900">Email</label>
+                <input id="register-email" className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" placeholder="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-900">Password</label>
-                <input className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" placeholder="••••••••" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
+                <label htmlFor="register-password" className="mb-1 block text-sm font-medium text-gray-900">Password</label>
+                <input id="register-password" className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" placeholder="••••••••" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-900">Ruolo</label>
-                <select className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" value={role} onChange={(e)=>setRole(e.target.value as any)}>
+                <label htmlFor="register-role" className="mb-1 block text-sm font-medium text-gray-900">Ruolo</label>
+                <select id="register-role" className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm sm:text-base" value={role} onChange={(e)=>setRole(e.target.value as any)}>
                   <option value="student">Studente</option>
                   <option value="tutor">Tutor</option>
                 </select>

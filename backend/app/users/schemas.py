@@ -38,6 +38,15 @@ class StudentCreate(StudentBase):
 class TutorCreate(TutorBase):
     user: UserCreate
 
+class TutorSelfCreate(BaseModel):
+    """Payload to create a tutor profile for the current authenticated user."""
+    first_name: str
+    last_name: str
+    bio: Optional[str] = None
+    subjects: Optional[str] = None
+    hourly_rate: int
+    is_available: bool = True
+
 # Update schemas
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None

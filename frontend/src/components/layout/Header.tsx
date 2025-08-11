@@ -4,9 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 
-interface RoleAwareNavLinksProps {
-    role: 'student' | 'tutor' | 'admin' | null
-}
+type RoleAwareNavLinksProps = Readonly<{ role: 'student' | 'tutor' | 'admin' | null }>
 
 function RoleAwareNavLinks({ role }: RoleAwareNavLinksProps) {
     if (!role) {

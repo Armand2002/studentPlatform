@@ -2,7 +2,9 @@
 import { usePathname } from 'next/navigation'
 import Header from '@/components/layout/Header'
 
-export default function ClientPageWrapper({ children }: { children: React.ReactNode }) {
+type ClientPageWrapperProps = Readonly<{ children: React.ReactNode }>
+
+export default function ClientPageWrapper({ children }: ClientPageWrapperProps) {
   const pathname = usePathname()
   const isAuth = pathname?.startsWith('/login') || pathname?.startsWith('/register')
   const isHome = pathname === '/'

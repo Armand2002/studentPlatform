@@ -1,6 +1,6 @@
 "use client"
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { getMe, loginWithPassword, registerUser } from '@/lib/api'
+import { getMe, loginWithPassword, registerUser, logoutUser } from '@/lib/api'
 
 type UserRole = 'student' | 'tutor' | 'admin'
 
@@ -17,12 +17,12 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (input: { email: string; password: string; role: 'student' | 'tutor'; first_name?: string; last_name?: string }) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -46,6 +46,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', tokens.access_token)
       localStorage.setItem('refresh_token', tokens.refresh_token)
+      // Mirror tokens to cookies for middleware usage (httpOnly not possible client-side, but enough for SSR redirects)
+      document.cookie = `access_token=${tokens.access_token}; path=/; SameSite=Lax`
+      document.cookie = `refresh_token=${tokens.refresh_token}; path=/; SameSite=Lax`
     }
     const me = await getMe()
     setUser(me)
@@ -56,12 +59,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await login(input.email, input.password)
   }, [login])
 
-  const logout = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+  const logout = useCallback(async () => {
+    try {
+      await logoutUser()
+    } catch {
+      // ignore network errors on logout
+    } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        document.cookie = `access_token=; path=/; Max-Age=0`
+        document.cookie = `refresh_token=; path=/; Max-Age=0`
+      }
+      setUser(null)
     }
-    setUser(null)
   }, [])
 
   const value = useMemo<AuthContextType>(() => ({ user, isLoading, login, register, logout }), [user, isLoading, login, register, logout])

@@ -67,6 +67,43 @@ class UserService:
         db.commit()
         db.refresh(tutor)
         return tutor
+
+    @staticmethod
+    async def create_tutor_for_user(db: Session, user_id: int, payload: schemas.TutorSelfCreate) -> models.Tutor:
+        """Create a tutor profile for an existing authenticated user.
+        Fails if the user already has a tutor profile or role mismatch.
+        """
+        # Ensure user exists
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        if not user:
+            return None
+
+        # If user has student role, allow upgrading role to tutor
+        if user.role not in [models.UserRole.TUTOR, models.UserRole.STUDENT]:
+            # Admins should not have tutor profile
+            return None
+
+        existing = db.query(models.Tutor).filter(models.Tutor.user_id == user_id).first()
+        if existing:
+            return existing
+
+        # If not already tutor, set role to tutor
+        if user.role != models.UserRole.TUTOR:
+            user.role = models.UserRole.TUTOR
+
+        tutor = models.Tutor(
+            user_id=user.id,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            bio=payload.bio,
+            subjects=payload.subjects,
+            hourly_rate=payload.hourly_rate,
+            is_available=payload.is_available,
+        )
+        db.add(tutor)
+        db.commit()
+        db.refresh(tutor)
+        return tutor
     
     @staticmethod
     async def get_student_by_id(db: Session, student_id: int) -> Optional[models.Student]:

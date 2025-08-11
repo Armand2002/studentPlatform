@@ -86,19 +86,20 @@ async def get_upcoming_bookings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get upcoming bookings for current user"""
+    """Get upcoming bookings for current user; admins see all upcoming."""
+    if current_user.role == UserRole.ADMIN:
+        return await services.BookingService.get_upcoming_bookings_all(db, skip, limit)
     if current_user.role == UserRole.STUDENT:
         student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
         if not student:
             raise HTTPException(status_code=404, detail="Student profile not found")
         return await services.BookingService.get_upcoming_bookings(db, student.id, "student", skip, limit)
-    elif current_user.role == UserRole.TUTOR:
+    if current_user.role == UserRole.TUTOR:
         tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
         if not tutor:
             raise HTTPException(status_code=404, detail="Tutor profile not found")
         return await services.BookingService.get_upcoming_bookings(db, tutor.id, "tutor", skip, limit)
-    else:
-        raise HTTPException(status_code=403, detail="Access denied")
+    raise HTTPException(status_code=403, detail="Access denied")
 
 @router.get("/completed", response_model=List[schemas.Booking], tags=["Bookings"])
 async def get_completed_bookings(
@@ -107,19 +108,20 @@ async def get_completed_bookings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get completed bookings for current user"""
+    """Get completed bookings for current user; admins see all completed."""
+    if current_user.role == UserRole.ADMIN:
+        return await services.BookingService.get_completed_bookings_all(db, skip, limit)
     if current_user.role == UserRole.STUDENT:
         student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
         if not student:
             raise HTTPException(status_code=404, detail="Student profile not found")
         return await services.BookingService.get_completed_bookings(db, student.id, "student", skip, limit)
-    elif current_user.role == UserRole.TUTOR:
+    if current_user.role == UserRole.TUTOR:
         tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
         if not tutor:
             raise HTTPException(status_code=404, detail="Tutor profile not found")
         return await services.BookingService.get_completed_bookings(db, tutor.id, "tutor", skip, limit)
-    else:
-        raise HTTPException(status_code=403, detail="Access denied")
+    raise HTTPException(status_code=403, detail="Access denied")
 
 @router.get("/{booking_id}", response_model=schemas.BookingWithDetails, tags=["Bookings"])
 async def get_booking(

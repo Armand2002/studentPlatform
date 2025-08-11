@@ -200,3 +200,25 @@ async def get_current_tutor_profile(
         raise HTTPException(status_code=404, detail="Tutor profile not found")
     
     return tutor
+
+@router.post("/me/tutor", response_model=schemas.Tutor, tags=["Profile"], status_code=status.HTTP_201_CREATED)
+async def create_current_tutor_profile(
+    payload: schemas.TutorSelfCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Create tutor profile for the current authenticated user if missing.
+    Allowed for users with role student or tutor.
+    """
+    if current_user.role not in [UserRole.STUDENT, UserRole.TUTOR]:
+        raise HTTPException(status_code=403, detail="Only students or tutors can create tutor profile")
+
+    # If profile already exists return it
+    existing = await services.UserService.get_tutor_by_user_id(db, current_user.id)
+    if existing:
+        return existing
+
+    tutor = await services.UserService.create_tutor_for_user(db, current_user.id, payload)
+    if not tutor:
+        raise HTTPException(status_code=400, detail="Unable to create tutor profile")
+    return tutor

@@ -78,6 +78,14 @@ class BookingService:
             query = query.filter(models.Booking.tutor_id == user_id)
         
         return query.order_by(models.Booking.start_time.asc()).offset(skip).limit(limit).all()
+
+    @staticmethod
+    async def get_upcoming_bookings_all(db: Session, skip: int = 0, limit: int = 100) -> List[models.Booking]:
+        """Get upcoming bookings for all users (admin only)."""
+        now = datetime.utcnow()
+        return db.query(models.Booking).filter(
+            models.Booking.start_time >= now
+        ).order_by(models.Booking.start_time.asc()).offset(skip).limit(limit).all()
     
     @staticmethod
     async def get_completed_bookings(db: Session, user_id: int, user_role: str, skip: int = 0, limit: int = 100) -> List[models.Booking]:
@@ -96,6 +104,22 @@ class BookingService:
             query = query.filter(models.Booking.tutor_id == user_id)
         
         return query.order_by(models.Booking.start_time.desc()).offset(skip).limit(limit).all()
+
+    @staticmethod
+    async def get_completed_bookings_all(db: Session, skip: int = 0, limit: int = 100) -> List[models.Booking]:
+        """Get completed bookings for all users (admin only)."""
+        now = datetime.utcnow()
+        return db.query(models.Booking).filter(
+            and_(
+                models.Booking.end_time < now,
+                models.Booking.status == models.BookingStatus.COMPLETED
+            )
+        ).order_by(models.Booking.start_time.desc()).offset(skip).limit(limit).all()
+
+    @staticmethod
+    async def get_all_bookings(db: Session, skip: int = 0, limit: int = 100) -> List[models.Booking]:
+        """Get all bookings (admin only)."""
+        return db.query(models.Booking).order_by(models.Booking.start_time.desc()).offset(skip).limit(limit).all()
     
     @staticmethod
     async def update_booking_status(db: Session, booking_id: int, status: models.BookingStatus) -> Optional[models.Booking]:

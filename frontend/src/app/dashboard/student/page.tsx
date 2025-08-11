@@ -3,6 +3,12 @@ import ActivePackagesWidget from '@/components/dashboard/ActivePackagesWidget'
 import UpcomingLessonsWidget from '@/components/dashboard/UpcomingLessonsWidget'
 import QuickActionsWidget from '@/components/dashboard/QuickActionsWidget'
 import LearningProgressWidget from '@/components/dashboard/LearningProgressWidget'
+import BookingCalendarWidget from '@/components/dashboard/BookingCalendarWidget'
+import StudyStreakWidget from '@/components/dashboard/StudyStreakWidget'
+import RecentActivityWidget from '@/components/dashboard/RecentActivityWidget'
+import AdvancedBookingWidget from '@/components/dashboard/AdvancedBookingWidget'
+import WeeklyCalendarWidget from '@/components/dashboard/WeeklyCalendarWidget'
+import MonthlyCalendarWidget from '@/components/dashboard/MonthlyCalendarWidget'
 import RequireAuth from '@/components/auth/RequireAuth'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -22,6 +28,12 @@ export default function StudentDashboardPage() {
             <UpcomingLessonsWidget />
             <QuickActionsWidget />
             <LearningProgressWidget />
+            <BookingCalendarWidget />
+            <StudyStreakWidget />
+            <RecentActivityWidget />
+            <AdvancedBookingWidget />
+            <WeeklyCalendarWidget />
+            <MonthlyCalendarWidget />
           </div>
         </div>
       ) : null}

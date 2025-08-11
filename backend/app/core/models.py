@@ -7,5 +7,6 @@ from app.packages.models import Package, PackagePurchase
 from app.bookings.models import Booking, BookingStatus
 from app.slots.models import Slot
 from app.files.models import File
+from app.payments.models import Payment
 
 # This file ensures all models are imported and available for Alembic migrations 
