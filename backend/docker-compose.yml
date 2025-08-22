@@ -7,6 +7,8 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://tutoring:password@db:5432/tutoring
+      - SECRET_KEY=your-super-secret-key-change-in-production-12345678901234567890
+      - AUTO_SEED=true
     depends_on:
       - db
     volumes:

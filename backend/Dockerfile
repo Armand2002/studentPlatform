@@ -21,8 +21,11 @@ COPY . .
 # Create uploads directory
 RUN mkdir -p static/uploads
 
+# Make start script executable
+RUN chmod +x start.sh
+
 # Expose port
 EXPOSE 8000
 
 # Run application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["./start.sh"]

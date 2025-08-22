@@ -14,12 +14,16 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
     }
   }, [isLoading, user, router])
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <LoadingSpinner />
       </div>
     )
+  }
+
+  if (!user) {
+    return null // Evita flash di contenuto prima del redirect
   }
   return <>{children}</>
 }
