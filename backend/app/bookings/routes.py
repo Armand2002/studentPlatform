@@ -248,3 +248,58 @@ async def cancel_booking(
         return cancelled_booking
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/pricing/preview", response_model=schemas.BookingWithPricing, tags=["Bookings"])
+async def preview_booking_pricing(
+    lesson_type: str = "doposcuola",
+    subject: str = "Matematica", 
+    duration_hours: int = 1,
+    tutor_id: int = 1,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    👁️ ANTEPRIMA PRICING BOOKING - Come Excel preview
+    
+    Mostra anteprima prezzo booking senza creare la prenotazione.
+    Utile per UI real-time che mostra prezzo mentre utente compila form.
+    """
+    
+    from app.pricing.services import PricingService
+    
+    try:
+        # Calcola pricing preview
+        pricing_result = await PricingService.preview_lesson_calculation(
+            lesson_type=lesson_type,
+            subject=subject, 
+            duration_hours=duration_hours,
+            tutor_id=tutor_id,
+            db=db
+        )
+        
+        # Simula booking per response
+        mock_booking = {
+            "id": 0,  # Mock ID
+            "student_id": 0,  # Mock student ID
+            "tutor_id": tutor_id,
+            "package_purchase_id": 0,  # Mock package ID
+            "start_time": "2024-01-01T00:00:00",  # Mock datetime
+            "end_time": "2024-01-01T01:00:00",  # Mock datetime
+            "duration_hours": duration_hours,
+            "subject": subject,
+            "notes": None,
+            "status": "pending",
+            "created_at": "2024-01-01T00:00:00",
+            "updated_at": "2024-01-01T00:00:00",
+            "calculated_duration": duration_hours,
+            "calculated_price": pricing_result["final_total_price"],
+            "tutor_earnings": pricing_result["tutor_earnings"], 
+            "platform_fee": pricing_result["platform_fee"],
+            "pricing_rule_applied": pricing_result["applied_rule_name"],
+            "pricing_breakdown": pricing_result
+        }
+        
+        return schemas.BookingWithPricing(**mock_booking)
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Pricing preview error: {str(e)}")

@@ -1,8 +1,8 @@
 """
 Booking schemas for request/response validation
 """
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Dict
 from datetime import datetime
 from app.bookings.models import BookingStatus
 
@@ -38,6 +38,13 @@ class Booking(BookingBase):
     status: BookingStatus
     created_at: datetime
     updated_at: datetime
+    
+    # 🆕 CAMPI PRICING CALCOLATI  
+    calculated_duration: Optional[int] = Field(None, description="Durata calcolata automaticamente")
+    calculated_price: Optional[float] = Field(None, description="Prezzo calcolato automaticamente €")
+    tutor_earnings: Optional[float] = Field(None, description="Guadagno tutor €")
+    platform_fee: Optional[float] = Field(None, description="Fee piattaforma €")
+    pricing_rule_applied: Optional[str] = Field(None, description="Regola pricing applicata")
 
     class Config:
         from_attributes = True
@@ -46,3 +53,7 @@ class BookingWithDetails(Booking):
     student_name: str
     tutor_name: str
     package_name: str
+
+class BookingWithPricing(Booking):
+    """Booking con dettagli pricing completi"""
+    pricing_breakdown: Optional[Dict] = Field(None, description="Dettagli calcolo pricing")

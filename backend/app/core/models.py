@@ -8,5 +8,6 @@ from app.bookings.models import Booking, BookingStatus
 from app.slots.models import Slot
 from app.files.models import File
 from app.payments.models import Payment
+from app.pricing.models import PricingRule, TutorPricingOverride, PricingCalculation, LessonType  # 🆕 NUOVO
 
 # This file ensures all models are imported and available for Alembic migrations 
