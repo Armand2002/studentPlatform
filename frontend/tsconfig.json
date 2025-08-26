@@ -22,11 +22,20 @@
       "@/*": [
         "src/*"
       ],
-      "@components/*": [
+      "@/components/*": [
         "src/components/*"
       ],
-      "@app/*": [
+      "@/app/*": [
         "src/app/*"
+      ],
+      "@/lib/*": [
+        "src/lib/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/types/*": [
+        "src/types/*"
       ]
     },
     "plugins": [

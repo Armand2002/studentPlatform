@@ -107,16 +107,18 @@ export default function PackagesPage() {
         {!loading && error && <div className="text-sm text-red-600">{error}</div>}
         {!loading && !error && filtered.length === 0 && <div className="text-sm text-blue-700">Nessun pacchetto trovato</div>}
         {!loading && !error && filtered.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {filtered.map((pkg) => (
-              <PackageCard key={pkg.id} pkg={pkg} onPurchase={handlePurchase} />
-            ))}
-          </div>
-          <div className="mt-6 flex items-center justify-between">
-            <button onClick={()=> setPage((p)=> Math.max(0, p-1))} disabled={page===0} className="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-sm text-blue-700 hover:bg-blue-50 disabled:opacity-50">← Precedente</button>
-            <span className="text-xs text-gray-600">Pagina {page+1}</span>
-            <button onClick={()=> setPage((p)=> p+1)} disabled={(items||[]).length < pageSize} className="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-sm text-blue-700 hover:bg-blue-50 disabled:opacity-50">Successiva →</button>
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {filtered.map((pkg) => (
+                <PackageCard key={pkg.id} pkg={pkg} onPurchase={handlePurchase} />
+              ))}
+            </div>
+            <div className="mt-6 flex items-center justify-between">
+              <button onClick={()=> setPage((p)=> Math.max(0, p-1))} disabled={page===0} className="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-sm text-blue-700 hover:bg-blue-50 disabled:opacity-50">← Precedente</button>
+              <span className="text-xs text-gray-600">Pagina {page+1}</span>
+              <button onClick={()=> setPage((p)=> p+1)} disabled={(items||[]).length < pageSize} className="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-sm text-blue-700 hover:bg-blue-50 disabled:opacity-50">Successiva →</button>
+            </div>
+          </>
         )}
       </div>
     </section>

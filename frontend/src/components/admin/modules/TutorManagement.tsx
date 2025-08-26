@@ -104,7 +104,7 @@ const TutorManagement: React.FC<TutorManagementProps> = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant={tutor.isAvailable ? 'success' : 'error'}>
+                  <Badge variant={tutor.isAvailable ? 'success' : 'danger'}>
                     {tutor.isAvailable ? 'Disponibile' : 'Non disponibile'}
                   </Badge>
                 </td>
