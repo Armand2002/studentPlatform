@@ -17,22 +17,40 @@ export default function StudentDashboardPage() {
   return (
     <RequireAuth>
       {user?.role === 'student' ? (
-        <div className="container-app space-y-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-blue-900">Student Dashboard</h1>
-            <p className="text-blue-600">Benvenuto! Ecco un riepilogo rapido.</p>
+        <div className="space-y-6">
+          {/* Welcome section */}
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 rounded-xl p-6 border border-primary/20">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Benvenuto nella tua Dashboard
+            </h1>
+            <p className="text-foreground-secondary text-lg">
+              Ecco un riepilogo delle tue attività di studio e delle prossime lezioni.
+            </p>
           </div>
 
+          {/* Dashboard widgets */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
             <ActivePackagesWidget />
             <UpcomingLessonsWidget />
             <QuickActionsWidget />
             <LearningProgressWidget />
+          </div>
+
+          {/* Calendar section */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <BookingCalendarWidget />
+            <WeeklyCalendarWidget />
+          </div>
+
+          {/* Activity and progress section */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <StudyStreakWidget />
             <RecentActivityWidget />
             <AdvancedBookingWidget />
-            <WeeklyCalendarWidget />
+          </div>
+
+          {/* Monthly calendar */}
+          <div className="grid grid-cols-1">
             <MonthlyCalendarWidget />
           </div>
         </div>
