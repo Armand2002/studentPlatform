@@ -202,3 +202,34 @@ def reset_password(db: Session, token: str, new_password: str):
     return {"message": "Password successfully reset"}
 
 # Additional service functions would go here...
+
+async def get_current_user(token: str, db: Session):
+    """Get current user from JWT token"""
+    from fastapi import HTTPException, status
+    from app.core.security import decode_token
+    
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    email = decode_token(token)
+    if email is None:
+        raise credentials_exception
+    
+    user = db.query(user_models.User).filter(user_models.User.email == email).first()
+    if user is None:
+        raise credentials_exception
+    
+    # Convert to Pydantic schema
+    from app.auth import schemas
+    return schemas.User(
+        id=user.id,
+        email=user.email,
+        role=user.role,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+        created_at=user.created_at,
+        updated_at=user.updated_at
+    )
