@@ -13,8 +13,61 @@ from app.core.security import verify_password, get_password_hash, create_access_
 from app.core.config import settings
 import secrets
 
+def create_user_with_profile(db: Session, registration_data: schemas.StudentRegistration | schemas.TutorRegistration) -> user_models.User:
+    """Create a new user with complete profile (student or tutor)"""
+    # Check if user exists
+    existing_user = db.query(user_models.User).filter(user_models.User.email == registration_data.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create user
+    hashed_password = get_password_hash(registration_data.password)
+    db_user = user_models.User(
+        email=registration_data.email,
+        hashed_password=hashed_password,
+        role=registration_data.role
+    )
+    db.add(db_user)
+    db.flush()  # Get the user ID
+    
+    # Create profile based on role
+    if registration_data.role == user_models.UserRole.STUDENT:
+        student_data = registration_data
+        from datetime import datetime
+        # Convert string date to date object
+        date_of_birth = datetime.strptime(student_data.date_of_birth, "%Y-%m-%d").date()
+        
+        student_profile = user_models.Student(
+            user_id=db_user.id,
+            first_name=student_data.first_name,
+            last_name=student_data.last_name,
+            date_of_birth=date_of_birth,
+            institute=student_data.institute,
+            class_level=student_data.class_level,
+            address=student_data.address,
+            phone_number=student_data.phone_number
+        )
+        db.add(student_profile)
+        
+    elif registration_data.role == user_models.UserRole.TUTOR:
+        tutor_data = registration_data
+        tutor_profile = user_models.Tutor(
+            user_id=db_user.id,
+            first_name=tutor_data.first_name,
+            last_name=tutor_data.last_name,
+            bio=tutor_data.bio,
+            subjects=tutor_data.subjects,
+            hourly_rate=tutor_data.hourly_rate,
+            is_available=tutor_data.is_available
+        )
+        db.add(tutor_profile)
+    
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 def create_user(db: Session, user_data: schemas.UserCreate) -> user_models.User:
-    """Create a new user"""
+    """Create a new user (legacy method for backward compatibility)"""
     # Check if user exists
     existing_user = db.query(user_models.User).filter(user_models.User.email == user_data.email).first()
     if existing_user:

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
-import DashboardWidget from './DashboardWidget'
-import { api } from '@/lib/api'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Card } from '@/components/ui/Card'
+import { api, getCurrentStudentProfile, getTutors } from '@/lib/api'
 import { isAxiosError } from 'axios'
+import DashboardWidget from './DashboardWidget'
 
 type Tutor = { id: number; user_id: number; first_name?: string; last_name?: string }
 type Slot = { id: number; tutor_id: number; date: string; start_time: string; end_time: string; is_available: boolean }

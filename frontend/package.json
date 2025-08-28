@@ -10,6 +10,12 @@
 	  	  "type-check": "tsc --noEmit"
 	  },
 	  "dependencies": {
+	  	  "@fullcalendar/core": "^6.1.19",
+	  	  "@fullcalendar/daygrid": "^6.1.19",
+	  	  "@fullcalendar/interaction": "^6.1.19",
+	  	  "@fullcalendar/list": "^6.1.19",
+	  	  "@fullcalendar/react": "^6.1.19",
+	  	  "@fullcalendar/timegrid": "^6.1.19",
 	  	  "@headlessui/react": "^2.2.0",
 	  	  "@heroicons/react": "^2.0.18",
 	  	  "axios": "^1.11.0",
@@ -27,6 +33,7 @@
 	  	  "@types/node": "^20.14.12",
 	  	  "@types/react": "^18.3.3",
 	  	  "autoprefixer": "^10.4.19",
+	  	  "critters": "^0.0.23",
 	  	  "eslint": "^8.57.0",
 	  	  "eslint-config-next": "14.2.6",
 	  	  "postcss": "^8.4.39",

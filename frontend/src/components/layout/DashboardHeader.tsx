@@ -139,7 +139,7 @@ export default function DashboardHeader({ onMenuClick, user }: DashboardHeaderPr
                       </span>
                     ) : (
                       <Link
-                        href={breadcrumb.href}
+                        href={breadcrumb.href as any}
                         className="text-sm font-medium text-foreground-muted hover:text-foreground transition-colors"
                       >
                         {breadcrumb.name}
@@ -202,7 +202,7 @@ export default function DashboardHeader({ onMenuClick, user }: DashboardHeaderPr
                   <Menu.Item>
                     {({ active }) => (
                       <Link
-                        href={`/dashboard/${user.role}/settings`}
+                        href={`/dashboard/${user.role}/settings` as any}
                         className={cn(
                           'group flex items-center px-4 py-2 text-sm transition-colors',
                           active ? 'bg-background-secondary text-foreground' : 'text-foreground-muted'

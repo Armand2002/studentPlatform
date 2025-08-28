@@ -3,12 +3,7 @@ import ActivePackagesWidget from '@/components/dashboard/ActivePackagesWidget'
 import UpcomingLessonsWidget from '@/components/dashboard/UpcomingLessonsWidget'
 import QuickActionsWidget from '@/components/dashboard/QuickActionsWidget'
 import LearningProgressWidget from '@/components/dashboard/LearningProgressWidget'
-import BookingCalendarWidget from '@/components/dashboard/BookingCalendarWidget'
-import StudyStreakWidget from '@/components/dashboard/StudyStreakWidget'
-import RecentActivityWidget from '@/components/dashboard/RecentActivityWidget'
-import AdvancedBookingWidget from '@/components/dashboard/AdvancedBookingWidget'
-import WeeklyCalendarWidget from '@/components/dashboard/WeeklyCalendarWidget'
-import MonthlyCalendarWidget from '@/components/dashboard/MonthlyCalendarWidget'
+import StudentCalendar from '@/components/dashboard/StudentCalendar'
 import RequireAuth from '@/components/auth/RequireAuth'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -37,21 +32,8 @@ export default function StudentDashboardPage() {
           </div>
 
           {/* Calendar section */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <BookingCalendarWidget />
-            <WeeklyCalendarWidget />
-          </div>
-
-          {/* Activity and progress section */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <StudyStreakWidget />
-            <RecentActivityWidget />
-            <AdvancedBookingWidget />
-          </div>
-
-          {/* Monthly calendar */}
-          <div className="grid grid-cols-1">
-            <MonthlyCalendarWidget />
+          <div className="grid grid-cols-1 gap-6">
+            <StudentCalendar />
           </div>
         </div>
       ) : null}

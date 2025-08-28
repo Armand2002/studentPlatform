@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { isAxiosError } from 'axios'
 import DashboardWidget from './DashboardWidget'
 import { api } from '@/lib/api'
+import { getCurrentStudentProfile } from '@/lib/api'
 
 type ActivePackage = { id: number; name: string; remaining_hours?: number; expires_at?: string }
 
@@ -10,13 +11,14 @@ export default function ActivePackagesWidget() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  async function fetchData() {
-    setError(null)
-    setLoading(true)
+  const fetchData = async () => {
     try {
-      // Gate: call only if student profile exists to avoid 404 spam from backend
+      setLoading(true)
+      setError(null)
+      
+      // 🆕 USA NUOVA FUNZIONE API per verificare profilo studente
       try {
-        await api.get('/api/users/me/student')
+        await getCurrentStudentProfile()
       } catch (e) {
         if (isAxiosError(e) && e.response?.status === 404) {
           setData([])

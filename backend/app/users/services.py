@@ -104,7 +104,7 @@ class UserService:
         db.commit()
         db.refresh(tutor)
         return tutor
-    
+
     @staticmethod
     async def get_student_by_id(db: Session, student_id: int) -> Optional[models.Student]:
         """Get student by ID"""

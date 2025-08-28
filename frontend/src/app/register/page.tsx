@@ -34,8 +34,44 @@ export default function RegisterPage() {
       return
     }
     
+    // Validazione campi specifici per ruolo
+    if (role === 'student') {
+      if (!dateOfBirth || !institute || !classLevel || !address || !phoneNumber) {
+        setError('Completa tutti i campi del profilo studente')
+        setLoading(false)
+        return
+      }
+    } else if (role === 'tutor') {
+      if (!hourlyRate) {
+        setError('Inserisci la tariffa oraria')
+        setLoading(false)
+        return
+      }
+    }
+    
     try {
-      await register({ email, password, role, first_name: firstName || undefined, last_name: lastName || undefined })
+      const registrationData = {
+        email,
+        password,
+        role,
+        first_name: firstName,
+        last_name: lastName,
+        ...(role === 'student' && {
+          date_of_birth: dateOfBirth,
+          institute,
+          class_level: classLevel,
+          address,
+          phone_number: phoneNumber
+        }),
+        ...(role === 'tutor' && {
+          bio,
+          subjects,
+          hourly_rate: parseInt(hourlyRate),
+          is_available: isAvailable
+        })
+      }
+      
+      await register(registrationData)
       router.push('/dashboard')
     } catch (err: unknown) {
       let msg = 'Registrazione fallita'
@@ -132,6 +168,123 @@ export default function RegisterPage() {
                   <option value="tutor">Tutor</option>
                 </select>
               </div>
+              
+              {/* Student Profile Fields */}
+              {role === 'student' && (
+                <>
+                  <div>
+                    <label htmlFor="register-dob" className="mb-1 block text-sm font-medium text-foreground">Data di Nascita</label>
+                    <input 
+                      id="register-dob" 
+                      type="date" 
+                      required 
+                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
+                      value={dateOfBirth} 
+                      onChange={(e)=>setDateOfBirth(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="register-institute" className="mb-1 block text-sm font-medium text-foreground">Istituto</label>
+                    <input 
+                      id="register-institute" 
+                      type="text" 
+                      required 
+                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
+                      placeholder="Nome della scuola/università" 
+                      value={institute} 
+                      onChange={(e)=>setInstitute(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="register-class" className="mb-1 block text-sm font-medium text-foreground">Classe/Anno</label>
+                    <input 
+                      id="register-class" 
+                      type="text" 
+                      required 
+                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
+                      placeholder="Es: 3° Liceo, 2° Anno" 
+                      value={classLevel} 
+                      onChange={(e)=>setClassLevel(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="register-address" className="mb-1 block text-sm font-medium text-foreground">Indirizzo</label>
+                    <input 
+                      id="register-address" 
+                      type="text" 
+                      required 
+                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
+                      placeholder="Il tuo indirizzo completo" 
+                      value={address} 
+                      onChange={(e)=>setAddress(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="register-phone" className="mb-1 block text-sm font-medium text-foreground">Telefono</label>
+                    <input 
+                      id="register-phone" 
+                      type="tel" 
+                      required 
+                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
+                      placeholder="Il tuo numero di telefono" 
+                      value={phoneNumber} 
+                      onChange={(e)=>setPhoneNumber(e.target.value)} 
+                    />
+                  </div>
+                </>
+              )}
+              
+              {/* Tutor Profile Fields */}
+              {role === 'tutor' && (
+                <>
+                  <div>
+                    <label htmlFor="register-bio" className="mb-1 block text-sm font-medium text-foreground">Biografia</label>
+                    <textarea 
+                      id="register-bio" 
+                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
+                      placeholder="Breve descrizione di te e delle tue competenze" 
+                      value={bio} 
+                      onChange={(e)=>setBio(e.target.value)} 
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="register-subjects" className="mb-1 block text-sm font-medium text-foreground">Materie</label>
+                    <input 
+                      id="register-subjects" 
+                      type="text" 
+                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
+                      placeholder="Es: Matematica, Fisica, Chimica" 
+                      value={subjects} 
+                      onChange={(e)=>setSubjects(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="register-rate" className="mb-1 block text-sm font-medium text-foreground">Tariffa Oraria (€)</label>
+                    <input 
+                      id="register-rate" 
+                      type="number" 
+                      required 
+                      min="0"
+                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
+                      placeholder="25" 
+                      value={hourlyRate} 
+                      onChange={(e)=>setHourlyRate(e.target.value)} 
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <input 
+                      id="register-available" 
+                      type="checkbox" 
+                      className="rounded border-border text-primary focus:ring-primary focus:ring-2" 
+                      checked={isAvailable} 
+                      onChange={(e)=>setIsAvailable(e.target.checked)} 
+                    />
+                    <label htmlFor="register-available" className="ml-2 block text-sm text-foreground">Disponibile per lezioni</label>
+                  </div>
+                </>
+              )}
+              
               {error && <p className="text-sm text-red-500">{error}</p>}
             <button disabled={loading} className="w-full h-11 sm:h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 font-medium transition-colors">{loading ? 'Attendere…' : 'Crea account'}</button>
             </form>
