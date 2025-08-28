@@ -29,8 +29,7 @@ class StudentRegistration(BaseModel):
     date_of_birth: str  # Will be converted to date in service
     institute: str = Field(..., min_length=2, max_length=100)
     class_level: str = Field(..., min_length=1, max_length=20)
-    address: str = Field(..., min_length=5, max_length=500)
-    phone_number: str = Field(..., regex=r"^\+?[1-9]\d{1,14}$")
+    phone_number: str = Field(..., pattern=r"^\+?[1-9]\d{1,14}$")
     
     @field_validator('date_of_birth')
     @classmethod
@@ -55,7 +54,7 @@ class TutorRegistration(BaseModel):
     last_name: str = Field(..., min_length=2, max_length=50)
     bio: Optional[str] = Field(None, max_length=1000)
     subjects: str = Field(..., min_length=2, max_length=200)
-    hourly_rate: int = Field(..., gt=0, le=200)
+    # hourly_rate removed from public registration; admin will set package pricing
     is_available: bool = Field(default=True)
 
 # ================================

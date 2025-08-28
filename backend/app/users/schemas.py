@@ -17,7 +17,6 @@ class StudentBase(BaseModel):
     date_of_birth: date
     institute: str
     class_level: str
-    address: str
     phone_number: str
 
 class TutorBase(BaseModel):
@@ -25,7 +24,6 @@ class TutorBase(BaseModel):
     last_name: str
     bio: Optional[str] = None
     subjects: Optional[str] = None
-    hourly_rate: int
     is_available: bool = True
 
 # Create schemas
@@ -44,7 +42,6 @@ class TutorSelfCreate(BaseModel):
     last_name: str
     bio: Optional[str] = None
     subjects: Optional[str] = None
-    hourly_rate: int
     is_available: bool = True
 
 # Update schemas
@@ -57,7 +54,6 @@ class StudentUpdate(BaseModel):
     last_name: Optional[str] = None
     institute: Optional[str] = None
     class_level: Optional[str] = None
-    address: Optional[str] = None
     phone_number: Optional[str] = None
 
 class TutorUpdate(BaseModel):
@@ -65,7 +61,6 @@ class TutorUpdate(BaseModel):
     last_name: Optional[str] = None
     bio: Optional[str] = None
     subjects: Optional[str] = None
-    hourly_rate: Optional[int] = None
     is_available: Optional[bool] = None
 
 # Response schemas

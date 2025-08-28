@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 
 BASE_URL = "http://localhost:8000/api"
+REQUEST_TIMEOUT = 10
 
 def test_student_registration():
     """Test registrazione studente con profilo completo"""
@@ -24,25 +25,28 @@ def test_student_registration():
         "date_of_birth": "2005-06-15",
         "institute": "Liceo Scientifico Galileo Galilei",
         "class_level": "3° Liceo",
-        "address": "Via Roma 123, Milano",
-        "phone_number": "123456789"
+        # Normalizza il numero come +39...
+        "phone_number": "+393331234567"
     }
     
     try:
-        response = requests.post(f"{BASE_URL}/auth/register", json=student_data)
+        response = requests.post(f"{BASE_URL}/auth/register", json=student_data, timeout=REQUEST_TIMEOUT)
         print(f"Status Code: {response.status_code}")
-        
+
         if response.status_code == 201:
             result = response.json()
             print("✅ Registrazione studente riuscita!")
             print(f"Token: {result.get('access_token', 'N/A')[:20]}...")
             return True, student_data["email"]
         else:
-            print(f"❌ Registrazione fallita: {response.text}")
+            print(f"❌ Registrazione fallita: {response.status_code} - {response.text}")
             return False, None
-            
+
+    except requests.RequestException as e:
+        print(f"❌ Errore di rete durante il test: {e}")
+        return False, None
     except Exception as e:
-        print(f"❌ Errore durante il test: {e}")
+        print(f"❌ Errore inaspettato durante il test: {e}")
         return False, None
 
 def test_tutor_registration():
@@ -60,25 +64,27 @@ def test_tutor_registration():
         "last_name": "Bianchi",
         "bio": "Tutor esperta in matematica e fisica",
         "subjects": "Matematica, Fisica",
-        "hourly_rate": 25,
         "is_available": True
     }
     
     try:
-        response = requests.post(f"{BASE_URL}/auth/register", json=tutor_data)
+        response = requests.post(f"{BASE_URL}/auth/register", json=tutor_data, timeout=REQUEST_TIMEOUT)
         print(f"Status Code: {response.status_code}")
-        
+
         if response.status_code == 201:
             result = response.json()
             print("✅ Registrazione tutor riuscita!")
             print(f"Token: {result.get('access_token', 'N/A')[:20]}...")
             return True, tutor_data["email"]
         else:
-            print(f"❌ Registrazione fallita: {response.text}")
+            print(f"❌ Registrazione fallita: {response.status_code} - {response.text}")
             return False, None
-            
+
+    except requests.RequestException as e:
+        print(f"❌ Errore di rete durante il test: {e}")
+        return False, None
     except Exception as e:
-        print(f"❌ Errore durante il test: {e}")
+        print(f"❌ Errore inaspettato durante il test: {e}")
         return False, None
 
 def test_login(email):
@@ -91,20 +97,23 @@ def test_login(email):
     }
     
     try:
-        response = requests.post(f"{BASE_URL}/auth/login", data=login_data)
+        response = requests.post(f"{BASE_URL}/auth/login", json=login_data, timeout=REQUEST_TIMEOUT)
         print(f"Status Code: {response.status_code}")
-        
+
         if response.status_code == 200:
             result = response.json()
             print("✅ Login riuscito!")
             print(f"Token: {result.get('access_token', 'N/A')[:20]}...")
             return result.get('access_token')
         else:
-            print(f"❌ Login fallito: {response.text}")
+            print(f"❌ Login fallito: {response.status_code} - {response.text}")
             return None
-            
+
+    except requests.RequestException as e:
+        print(f"❌ Errore di rete durante il login: {e}")
+        return None
     except Exception as e:
-        print(f"❌ Errore durante il login: {e}")
+        print(f"❌ Errore inaspettato durante il login: {e}")
         return None
 
 def test_student_profile(token):
@@ -118,9 +127,9 @@ def test_student_profile(token):
     headers = {"Authorization": f"Bearer {token}"}
     
     try:
-        response = requests.get(f"{BASE_URL}/users/me/student", headers=headers)
+        response = requests.get(f"{BASE_URL}/users/me/student", headers=headers, timeout=REQUEST_TIMEOUT)
         print(f"Status Code: {response.status_code}")
-        
+
         if response.status_code == 200:
             result = response.json()
             print("✅ Profilo studente accessibile!")
@@ -128,11 +137,14 @@ def test_student_profile(token):
             print(f"Istituto: {result.get('institute')}")
             return True
         else:
-            print(f"❌ Accesso profilo fallito: {response.text}")
+            print(f"❌ Accesso profilo fallito: {response.status_code} - {response.text}")
             return False
-            
+
+    except requests.RequestException as e:
+        print(f"❌ Errore di rete durante accesso profilo: {e}")
+        return False
     except Exception as e:
-        print(f"❌ Errore durante accesso profilo: {e}")
+        print(f"❌ Errore inaspettato durante accesso profilo: {e}")
         return False
 
 if __name__ == "__main__":

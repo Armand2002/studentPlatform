@@ -16,7 +16,7 @@ def seed_users(db: Session):
         db.add(tutor)
         db.flush()
     if not db.query(um.Tutor).filter(um.Tutor.user_id == tutor.id).first():
-        db.add(um.Tutor(user_id=tutor.id, first_name="Tutor", last_name="Seed", bio=None, subjects="Matematica", hourly_rate=20, is_available=True))
+        db.add(um.Tutor(user_id=tutor.id, first_name="Tutor", last_name="Seed", bio=None, subjects="Matematica", is_available=True))
     
     # Student + profile
     student = db.query(um.User).filter(um.User.email == "student.e2e@acme.com").first()
@@ -32,7 +32,7 @@ def seed_users(db: Session):
             date_of_birth=date(2000,1,1),
             institute="Seed High School",
             class_level="5",
-            address="Seed Street 1",
+            # address removed from Student model
             phone_number="0000000000",
         ))
     

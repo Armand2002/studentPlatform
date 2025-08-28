@@ -365,7 +365,7 @@ async def refresh_dashboard_cache(
 
 @router.get("/export/today")
 async def export_today_data(
-    format: str = Query("json", regex="^(json|csv)$", description="Export format"),
+    format: str = Query("json", pattern="^(json|csv)$", description="Export format"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_dashboard_access)
 ):

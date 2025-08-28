@@ -17,9 +17,9 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-	return (
- 			<html lang="it">
-                <body className="min-h-screen bg-white flex flex-col">
+   return (
+           <html lang="it">
+                <body className="min-h-screen bg-background flex flex-col">
                     <AuthProvider>
                         <ClientPageWrapper>
                             {/* PWA Service Worker Registration */}
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                             {children}
                         </ClientPageWrapper>
                     </AuthProvider>
- 				</body>
- 			</html>
-	)
+                </body>
+           </html>
+   )
 }

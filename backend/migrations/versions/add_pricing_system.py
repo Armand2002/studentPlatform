@@ -12,8 +12,8 @@ from sqlalchemy.dialects import postgresql
 from decimal import Decimal
 
 # revision identifiers, used by Alembic.
-revision: str = 'add_pricing_system_001'
-down_revision: Union[str, None] = '1388dfcd3a35'
+revision = 'add_pricing_system_001'
+down_revision = '1388dfcd3a35'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

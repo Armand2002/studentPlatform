@@ -40,7 +40,6 @@ class Student(Base):
     date_of_birth = Column(Date, nullable=False)
     institute = Column(String, nullable=False)  # Istituto
     class_level = Column(String, nullable=False)  # Classe
-    address = Column(Text, nullable=False)
     phone_number = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -59,7 +58,7 @@ class Tutor(Base):
     last_name = Column(String, nullable=False)
     bio = Column(Text)  # Biografia del tutor
     subjects = Column(Text)  # Materie insegnate (JSON string)
-    hourly_rate = Column(Integer, nullable=False)  # Tariffa oraria
+    # hourly_rate removed; pricing handled via admin/packages
     is_available = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

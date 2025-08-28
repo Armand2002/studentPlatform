@@ -44,7 +44,6 @@ def create_user_with_profile(db: Session, registration_data: schemas.StudentRegi
             date_of_birth=date_of_birth,
             institute=student_data.institute,
             class_level=student_data.class_level,
-            address=student_data.address,
             phone_number=student_data.phone_number
         )
         db.add(student_profile)
@@ -57,7 +56,7 @@ def create_user_with_profile(db: Session, registration_data: schemas.StudentRegi
             last_name=tutor_data.last_name,
             bio=tutor_data.bio,
             subjects=tutor_data.subjects,
-            hourly_rate=tutor_data.hourly_rate,
+            # hourly_rate intentionally omitted on public registration; use model default
             is_available=tutor_data.is_available
         )
         db.add(tutor_profile)

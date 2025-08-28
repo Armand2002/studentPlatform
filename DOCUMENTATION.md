@@ -823,7 +823,7 @@ class StudentCreate(BaseModel):
     date_of_birth: date
     institute: str = Field(..., min_length=2, max_length=100)
     class_level: str = Field(..., min_length=1, max_length=20)
-    phone_number: str = Field(..., regex=r"^\+?[1-9]\d{1,14}$")
+    phone_number: str = Field(..., pattern=r"^\+?[1-9]\d{1,14}$")
     
     @validator('date_of_birth')
     def validate_age(cls, v):
