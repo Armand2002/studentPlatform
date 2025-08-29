@@ -31,7 +31,6 @@ from app.payments.routes import router as payments_router
 from app.packages.routes import router as packages_router
 from app.slots.routes import router as slots_router
 from app.analytics.routes import router as analytics_router
-from app.admin.routes import router as admin_router
 from app.core.config import settings
 from app.utils.seed import seed_users
 
@@ -57,7 +56,10 @@ app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 app.include_router(packages_router, prefix="/api/packages", tags=["Packages"])
 app.include_router(slots_router, prefix="/api/slots", tags=["Slots"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
-app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
+from app.admin.routes import router as admin_router
+
+# admin_router already sets its own prefix
+app.include_router(admin_router)
 
 @app.get("/")
 async def root():
