@@ -13,3 +13,6 @@ google-auth-oauthlib==1.1.0
 PyPDF2==3.0.1
 python-dotenv==1.0.0
 pydantic-settings==2.0.3
+
+# Pin bcrypt to a 3.x release compatible with passlib 1.7.4
+bcrypt==3.2.0

@@ -22,6 +22,7 @@ from app.notifications.models import *
 from app.analytics.models import *
 from app.admin.models import *
 from app.slots.models import *
+from app.pricing.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -23,16 +23,36 @@ async def register_user(
     """Register a new user with complete profile (role-based schema validation)"""
     try:
         role = data.get("role")
-        if role == UserRole.STUDENT or role == "student":
-            registration_data = schemas.StudentRegistration(**data)
-        elif role == UserRole.TUTOR or role == "tutor":
-            registration_data = schemas.TutorRegistration(**data)
+        # Build a copy of the incoming payload and inject a normalized role
+        payload = dict(data or {})
+        # normalize role input (accept enum member or string, case-insensitive)
+        if isinstance(role, str):
+            role_norm = role.lower()
+            payload["role"] = role_norm
+            if role_norm == "student":
+                registration_data = schemas.StudentRegistration(**payload)
+            elif role_norm == "tutor":
+                registration_data = schemas.TutorRegistration(**payload)
+            else:
+                raise HTTPException(status_code=422, detail="Invalid role")
+        elif isinstance(role, UserRole):
+            # if an enum instance is provided, convert to its value for validation
+            payload["role"] = role.value
+            if role == UserRole.STUDENT:
+                registration_data = schemas.StudentRegistration(**payload)
+            elif role == UserRole.TUTOR:
+                registration_data = schemas.TutorRegistration(**payload)
+            else:
+                raise HTTPException(status_code=422, detail="Invalid role")
         else:
             raise HTTPException(status_code=422, detail="Invalid role")
 
         user = services.create_user_with_profile(db, registration_data)
         tokens = services.authenticate_user(db, user.email, registration_data.password)
         return tokens
+    except HTTPException:
+        # let FastAPI handle HTTPExceptions (e.g. 422 invalid role)
+        raise
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except ValueError as e:
