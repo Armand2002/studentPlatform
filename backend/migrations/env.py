@@ -18,7 +18,6 @@ from app.bookings.models import *
 from app.packages.models import *
 from app.payments.models import *
 from app.files.models import *
-from app.notifications.models import *
 from app.analytics.models import *
 from app.admin.models import *
 from app.slots.models import *

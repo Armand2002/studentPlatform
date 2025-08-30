@@ -16,3 +16,4 @@ pydantic-settings==2.0.3
 
 # Pin bcrypt to a 3.x release compatible with passlib 1.7.4
 bcrypt==3.2.0
+sendgrid==6.10.0
