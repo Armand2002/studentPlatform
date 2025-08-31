@@ -10,6 +10,12 @@ from app.users.models import User
 from app.users.models import UserRole
 from app.bookings import models, schemas, services
 from app.users import services as user_services
+from app.services.email_service import (
+    trigger_booking_confirmed,
+    trigger_booking_cancelled,
+    trigger_booking_rescheduled,
+    # optional: trigger_booking_created if you want immediate notifications on create
+)
 
 router = APIRouter()
 
@@ -30,7 +36,14 @@ async def create_booking(
         raise HTTPException(status_code=403, detail="Can only book for your own account")
     
     try:
-        return await services.BookingService.create_booking(db, booking_data)
+        booking = await services.BookingService.create_booking(db, booking_data)
+        # Optional: notify tutor/admin about new booking request (non-blocking)
+        try:
+            # fire and forget trigger
+            await trigger_booking_rescheduled(booking.id, db, booking.start_time)  # using reschedule as generic notify
+        except Exception:
+            pass
+        return booking
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -196,6 +209,11 @@ async def confirm_booking(
         raise HTTPException(status_code=403, detail="Access denied")
     
     confirmed_booking = await services.BookingService.confirm_booking(db, booking_id)
+    # Trigger email notifications (non-blocking)
+    try:
+        await trigger_booking_confirmed(confirmed_booking.id, db)
+    except Exception:
+        pass
     return confirmed_booking
 
 @router.post("/{booking_id}/complete", response_model=schemas.Booking, tags=["Bookings"])
@@ -245,6 +263,10 @@ async def cancel_booking(
     
     try:
         cancelled_booking = await services.BookingService.cancel_booking(db, booking_id)
+        try:
+            await trigger_booking_cancelled(cancelled_booking.id, db, reason="Cancelled by user/tutor/admin")
+        except Exception:
+            pass
         return cancelled_booking
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

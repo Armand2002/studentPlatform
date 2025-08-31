@@ -26,24 +26,14 @@ Backend API for online tutoring platform built with FastAPI.
 
 ### Prerequisites
 - Python 3.11+
-- PostgreSQL
-- Redis (optional, for caching)
-
-### Installation
-
-1. Clone repository
-```bash
-git clone <repository-url>
 cd backend
+Email service
+-------------
+The project includes a lightweight SendGrid-based email service at `app/services/email_service.py`.
+It exposes trigger functions used by bookings and admin flows (e.g. `trigger_booking_confirmed`, `trigger_booking_cancelled`, `trigger_package_assigned`).
+Configure SendGrid credentials in `.env` using variables prefixed `SENDGRID_` and add template IDs to `.env.example`.
 ```
 
-2. Create virtual environment
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies
 ```bash
 pip install -r requirements/development.txt
 ```

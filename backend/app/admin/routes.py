@@ -5,6 +5,7 @@ from app.core.database import get_db
 from app.auth.dependencies import get_current_user
 from app.users.models import UserRole
 from app.admin import schemas, services, models
+from app.services.email_service import trigger_package_assigned
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -26,7 +27,11 @@ async def create_package_assignment(
 		assignment = await services.AdminPackageService.create_assignment(db, assignment_data, admin_user.id)
 	except ValueError as exc:
 		raise HTTPException(status_code=404, detail=str(exc))
-	# background email could be scheduled here
+	# schedule email in the background (non-blocking)
+	try:
+		background_tasks.add_task(trigger_package_assigned, assignment.id, db)
+	except Exception:
+		pass
 	return assignment
 
 
