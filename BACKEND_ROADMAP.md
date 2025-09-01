@@ -1,5 +1,9 @@
 # 🚀 Backend Development Roadmap - Student Platform
 
+> ⚠️ Nota (31-08-2025): alcuni dettagli di questo documento sono storici. Alcuni moduli sono stati
+> rimossi o semplificati (vedi `docs/backend_changes.md`). Aggiorna i riferimenti se necessario.
+
+
 ## 📋 Indice
 1. [Panoramica Generale](#panoramica-generale)
 2. [Fase 1: Core Infrastructure & Setup](#fase-1-core-infrastructure--setup)
@@ -78,7 +82,7 @@ Completare e ottimizzare il backend FastAPI per supportare tutte le funzionalit�
 **Tasks:**
 ```python
 # Dev Environment Checklist
-├── ⏸️ Docker setup completo (PostgreSQL + Redis)
+├── ⏸️ Docker setup completo (PostgreSQL) — Redis rimosso dallo stack semplificato
 ├── ⏸️ Virtual environment documentation
 ├── ⏸️ IDE configuration (VS Code settings)
 ├── ⏸️ Hot reload configuration
@@ -320,7 +324,7 @@ Completare e ottimizzare il backend FastAPI per supportare tutte le funzionalit�
 ├── ⏸️ Database monitoring
 ├── ⏸️ Slow query analysis
 ├── ⏸️ Read replicas setup
-└── ⏸️ Caching strategy (Redis)
+└── ⏸️ Caching strategy (Redis) — opzionale; rimosso dallo stack semplificato
 ```
 
 **API Performance:**

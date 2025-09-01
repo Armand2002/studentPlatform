@@ -26,7 +26,6 @@ from app.auth.routes import router as auth_router
 from app.users.routes import router as users_router
 from app.bookings.routes import router as bookings_router
 from app.pricing.routes import router as pricing_router  # 🆕 NUOVO IMPORT
-from app.files.routes import router as files_router
 from app.payments.routes import router as payments_router
 from app.packages.routes import router as packages_router
 from app.slots.routes import router as slots_router
@@ -51,7 +50,7 @@ app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(users_router, prefix="/api/users", tags=["Users"])
 app.include_router(bookings_router, prefix="/api/bookings", tags=["Bookings"])
 app.include_router(pricing_router, prefix="/api/pricing", tags=["Pricing"])  # 🆕 NUOVO ROUTER
-app.include_router(files_router, prefix="/api/files", tags=["Files"])
+# files module removed/archived; file routes not included
 app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 app.include_router(packages_router, prefix="/api/packages", tags=["Packages"])
 app.include_router(slots_router, prefix="/api/slots", tags=["Slots"])

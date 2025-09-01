@@ -19,6 +19,7 @@ import {
 } from '@heroicons/react/24/outline'
 import Logo from '@/components/ui/Logo'
 import { cn } from '@/lib/utils'
+import MaterialsLink from '@/components/materials/MaterialsLink'
 
 interface DashboardSidebarProps {
   isOpen: boolean
@@ -121,6 +122,20 @@ function SidebarContent({ userRole, onClose }: { userRole: 'student' | 'tutor' |
       <nav className="flex-1 px-6 py-6 space-y-1">
         {navigation.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          
+          // Special handling for Materials links - replace with Google Drive
+          if (item.name === 'Materiali') {
+            return (
+              <MaterialsLink 
+                key={item.name}
+                variant="sidebar" 
+                className="w-full justify-start"
+                showText={true}
+                showIcon={true}
+              />
+            )
+          }
+          
           return (
             <Link
               key={item.name}

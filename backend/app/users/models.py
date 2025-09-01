@@ -67,7 +67,6 @@ class Tutor(Base):
     user = relationship("User", back_populates="tutor_profile")
     bookings = relationship("Booking", back_populates="tutor")
     packages = relationship("Package", back_populates="tutor")
-    files = relationship("File", back_populates="tutor")
     slots = relationship("Slot", back_populates="tutor")
 
 class UserSession(Base):

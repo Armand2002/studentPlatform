@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
+import MaterialsLink from '@/components/materials/MaterialsLink'
 
 type NavigationProps = Readonly<{ role: 'student' | 'tutor' | 'admin' | null }>
 
@@ -13,24 +14,52 @@ function LandingNavLinks() {
     return (
         <ul className="flex flex-col md:flex-row md:items-center md:gap-8 gap-4">
             <li>
-                <a href="#features" className="text-foreground-secondary hover:text-foreground transition-colors font-medium">
-                    Servizi
-                </a>
+                <Link href="/doposcuola" className="text-foreground-secondary hover:text-foreground transition-colors font-medium">
+                    Doposcuola
+                </Link>
             </li>
             <li>
-                <a href="#testimonials" className="text-foreground-secondary hover:text-foreground transition-colors font-medium">
-                    Testimonianze
-                </a>
+                <Link href="/ripetizioni" className="text-foreground-secondary hover:text-foreground transition-colors font-medium">
+                    Ripetizioni
+                </Link>
+            </li>
+            {/* Desktop dropdown */}
+            <li className="relative group hidden md:block">
+                <Link href="/preparazione-test" className="text-foreground-secondary hover:text-foreground transition-colors font-medium cursor-pointer">
+                    Preparazione per i Test
+                </Link>
+                {/* Dropdown menu */}
+                <div className="absolute left-0 mt-2 w-64 bg-background border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-2">
+                        <Link href="/test-forze-ordine" className="block px-4 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-background-secondary transition-colors">
+                            Forze dell'Ordine
+                        </Link>
+                        <Link href="/test-universitari" className="block px-4 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-background-secondary transition-colors">
+                            Test Universitari
+                        </Link>
+                    </div>
+                </div>
+            </li>
+            {/* Mobile expanded items */}
+            <li className="md:hidden">
+                <Link href="/preparazione-test" className="text-foreground-secondary hover:text-foreground transition-colors font-medium">
+                    Preparazione per i Test
+                </Link>
+            </li>
+            <li className="md:hidden ml-4">
+                <Link href="/test-forze-ordine" className="text-foreground-muted hover:text-foreground transition-colors text-sm">
+                    → Forze dell'Ordine
+                </Link>
+            </li>
+            <li className="md:hidden ml-4">
+                <Link href="/test-universitari" className="text-foreground-muted hover:text-foreground transition-colors text-sm">
+                    → Test Universitari
+                </Link>
             </li>
             <li>
-                <a href="#faq" className="text-foreground-secondary hover:text-foreground transition-colors font-medium">
-                    FAQ
-                </a>
-            </li>
-            <li>
-                <a href="#contact" className="text-foreground-secondary hover:text-foreground transition-colors font-medium">
-                    Contatti
-                </a>
+                <MaterialsLink 
+                    variant="header" 
+                />
             </li>
         </ul>
     )
@@ -45,6 +74,11 @@ function DashboardNavLinks({ role }: NavigationProps) {
             <ul className="flex flex-col md:flex-row md:items-center md:gap-6 gap-4">
                 <li><Link href="/dashboard/student" className="text-foreground-secondary hover:text-foreground transition-colors">Le mie lezioni</Link></li>
                 <li><Link href="/dashboard" className="text-foreground-secondary hover:text-foreground transition-colors">Dashboard</Link></li>
+                <li>
+                    <MaterialsLink 
+                        variant="header"
+                    />
+                </li>
             </ul>
         )
     }
@@ -53,6 +87,11 @@ function DashboardNavLinks({ role }: NavigationProps) {
             <ul className="flex flex-col md:flex-row md:items-center md:gap-6 gap-4">
                 <li><Link href="/dashboard/tutor" className="text-foreground-secondary hover:text-foreground transition-colors">Calendario</Link></li>
                 <li><Link href="/dashboard" className="text-foreground-secondary hover:text-foreground transition-colors">Dashboard</Link></li>
+                <li>
+                    <MaterialsLink 
+                        variant="header"
+                    />
+                </li>
             </ul>
         )
     }
@@ -60,6 +99,11 @@ function DashboardNavLinks({ role }: NavigationProps) {
         <ul className="flex flex-col md:flex-row md:items-center md:gap-6 gap-4">
             <li><Link href="/dashboard/admin" className="text-foreground-secondary hover:text-foreground transition-colors">Amministrazione</Link></li>
             <li><Link href="/dashboard" className="text-foreground-secondary hover:text-foreground transition-colors">Dashboard</Link></li>
+            <li>
+                <MaterialsLink 
+                    variant="header"
+                />
+            </li>
         </ul>
     )
 }
@@ -69,10 +113,6 @@ export default function Header() {
     const [open, setOpen] = useState(false)
     const pathname = usePathname()
     const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register')
-
-    // Hydration guard: evita mismatch SSR/CSR su href dinamici
-    const [mounted, setMounted] = useState(false)
-    useEffect(() => { setMounted(true) }, [])
 
 	return (
         <header className={isAuthPage ? "sticky top-0 z-40 border-b border-border bg-background" : "sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/90"}>

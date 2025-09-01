@@ -1,4 +1,9 @@
 # 🎯 **ROADMAP BACKEND SEMPLIFICATO - TUTORING PLATFORM**
+
+> ⚠️ Nota (31-08-2025): questo documento contiene riferimenti storici. Alcuni moduli
+> (es. `app/notifications`, `app/files`, integrazione Stripe completa) sono stati rimossi
+> o semplificati nel codice; vedere `docs/backend_changes.md` per lo stato corrente.
+
 *Backend ultra-snello, focalizzato su business value e zero over-engineering*
 
 ## 📋 **PANORAMICA SEMPLIFICAZIONI**

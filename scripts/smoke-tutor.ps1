@@ -52,13 +52,10 @@ $slots_today = Call GET "$BaseUrl/api/slots/?slot_date=$today" $h $null $null
 $metrics_403 = Call GET "$BaseUrl/api/analytics/metrics" $h $null $null
 
 # file upload
-$tmp = Join-Path $env:TEMP "smoke-e2e.pdf"; Set-Content -Path $tmp -Value "hello e2e" -Encoding UTF8
-$uploadStatus = & curl.exe -s -o NUL -w "%{http_code}" -H ("Authorization: Bearer " + $auth.access_token) -F ("file=@" + $tmp) -F ("subject=$Subject") -F "description=E2E" -F "is_public=false" ("$BaseUrl/api/files/upload")
-$list = @()
-try { $list = Invoke-RestMethod -Uri "$BaseUrl/api/files/?subject=$Subject" -Headers $h -ErrorAction Stop } catch { $list = @() }
-$file_id = ($list | Select-Object -First 1).id
-$downloadStatus = 0; if($file_id){ $downloadStatus = & curl.exe -s -o NUL -w "%{http_code}" -H ("Authorization: Bearer " + $auth.access_token) ("$BaseUrl/api/files/" + $file_id + "/download") }
-$delete_ok = $false; if($file_id){ try { Invoke-RestMethod -Uri ("$BaseUrl/api/files/" + $file_id) -Headers $h -Method Delete | Out-Null; $delete_ok = $true } catch { $delete_ok = $false } }
+# files module removed: skip upload/download/delete checks
+$uploadStatus = 0
+$downloadStatus = 0
+$delete_ok = $false
 
 $out = [ordered]@{
   auth_me = $auth_me_status

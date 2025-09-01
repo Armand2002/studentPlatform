@@ -6,7 +6,7 @@ from app.users.models import User, Student, Tutor, UserSession, PasswordReset, U
 from app.packages.models import Package, PackagePurchase
 from app.bookings.models import Booking, BookingStatus
 from app.slots.models import Slot
-from app.files.models import File
+# `app.files` removed; file-related models are archived. If reintroducing files, re-add import here.
 from app.payments.models import Payment
 from app.pricing.models import PricingRule, TutorPricingOverride, PricingCalculation, LessonType  # 🆕 NUOVO
 

@@ -1,5 +1,10 @@
 # Backend Structure - Tutoring Platform
 
+> ⚠️ Nota (31-08-2025): la struttura mostrata include elementi storici; alcuni moduli
+> come `app/notifications` e `app/files` sono stati rimossi dal codice. Per lo stato
+> corrente vedere `docs/backend_changes.md`.
+
+
 ```
 backend/
 ├── app/

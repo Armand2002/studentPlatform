@@ -1,5 +1,11 @@
 # Documentazione Tecnica - Student Platform
 
+> ⚠️ Avviso (31-08-2025): alcune funzionalità sono state rimosse o semplificate nel codice
+> (es. `app/notifications`, `app/files`, integrazione completa Stripe). Per lo stato
+> attuale e le modifiche applicate, leggere `docs/backend_changes.md` nella root del
+> repository. Aggiorna i riferimenti di questo documento se necessario.
+
+
 ## Indice
 1. [Overview del Progetto](#1-overview-del-progetto)
 2. [Analisi dei Requisiti](#2-analisi-dei-requisiti)

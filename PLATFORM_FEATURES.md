@@ -1,5 +1,12 @@
 # Piattaforma Tutoring — Funzionalità (Backend & Frontend)
 
+> ⚠️ Nota (31-08-2025): la codebase ha subito un cleanup che ha rimosso o semplificato
+> alcuni moduli (per esempio `app/notifications`, `app/files`). Per il resoconto delle
+> modifiche e per le istruzioni su come testare l'email service vedere `docs/backend_changes.md`.
+
+Questo documento riassume in modo sintetico e presentabile tutte le funzionalità implementate nel progetto (backend + frontend), lo stato attuale, e i criteri minimi di accettazione per ciascuna voce. Usalo come base per la presentazione al cliente e per verificare la conformità ai requisiti.
+# Piattaforma Tutoring — Funzionalità (Backend & Frontend)
+
 Questo documento riassume in modo sintetico e presentabile tutte le funzionalità implementate nel progetto (backend + frontend), lo stato attuale, e i criteri minimi di accettazione per ciascuna voce. Usalo come base per la presentazione al cliente e per verificare la conformità ai requisiti.
 
 ## Indice

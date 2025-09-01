@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import EarningsWidget from '@/components/dashboard/tutor/EarningsWidget'
 import StudentsWidget from '@/components/dashboard/tutor/StudentsWidget'
 import AvailabilityWidget from '@/components/dashboard/tutor/AvailabilityWidget'
-import MaterialsWidget from '@/components/dashboard/tutor/MaterialsWidget'
+import MaterialsLink from '@/components/materials/MaterialsLink'
 import PerformanceWidget from '@/components/dashboard/tutor/PerformanceWidget'
 
 export default function TutorDashboardPage() {
@@ -34,7 +34,10 @@ export default function TutorDashboardPage() {
 
           {/* Secondary widgets */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <MaterialsWidget />
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">Materiali Didattici</h2>
+              <MaterialsLink variant="widget" />
+            </div>
             <PerformanceWidget />
           </div>
 
