@@ -1,0 +1,11 @@
+{
+  "email": "student@test.com",
+  "password": "password123",
+  "role": "student",
+  "first_name": "Marco",
+  "last_name": "Rossi",
+  "date_of_birth": "2000-01-01",
+  "institute": "Universita di Roma",
+  "class_level": "3 Anno",
+  "phone_number": "+391234567890"
+}

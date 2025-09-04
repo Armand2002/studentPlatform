@@ -222,3 +222,22 @@ async def create_current_tutor_profile(
     if not tutor:
         raise HTTPException(status_code=400, detail="Unable to create tutor profile")
     return tutor
+
+@router.get("/tutors/me/students", response_model=List[schemas.StudentWithUser], tags=["Tutors"])
+async def get_my_assigned_students(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Get students assigned to the current tutor via bookings"""
+    # Verifica che l'utente sia un tutor
+    if current_user.role != UserRole.TUTOR:
+        raise HTTPException(status_code=403, detail="Access denied. Only tutors can access this endpoint")
+    
+    # Ottieni il tutor dal current_user
+    tutor = await services.UserService.get_tutor_by_user_id(db, current_user.id)
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor profile not found")
+    
+    # Ottieni gli studenti assegnati tramite i bookings
+    assigned_students = await services.UserService.get_tutor_assigned_students(db, tutor.id)
+    return assigned_students

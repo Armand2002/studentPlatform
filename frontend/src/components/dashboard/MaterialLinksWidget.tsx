@@ -67,83 +67,38 @@ export default function MaterialLinksWidget({ className }: MaterialLinksWidgetPr
   const [error, setError] = useState<string | null>(null)
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
 
-  // Mock data per sviluppo - sarà sostituito con API call
+  // API call per ottenere i materiali di studio
   useEffect(() => {
-    const mockMaterials: MaterialData[] = [
-      {
-        id: '1',
-        title: 'Formule Calcolo Differenziale',
-        type: 'document',
-        subject: 'Matematica',
-        description: 'Raccolta completa delle formule per il calcolo differenziale',
-        url: '/materials/math/calc-diff-formulas.pdf',
-        size: '2.3 MB',
-        lastAccessed: '2025-08-28',
-        isNew: false
-      },
-      {
-        id: '2',
-        title: 'Video Lezione: Integrali',
-        type: 'video',
-        subject: 'Matematica',
-        description: 'Spiegazione completa degli integrali indefiniti e definiti',
-        url: '/materials/math/integrali-video.mp4',
-        duration: '45 min',
-        lastAccessed: '2025-08-25',
-        isNew: true
-      },
-      {
-        id: '3',
-        title: 'Esercizi Meccanica Classica',
-        type: 'exercise',
-        subject: 'Fisica',
-        description: 'Serie di esercizi con soluzioni per la meccanica classica',
-        url: '/materials/physics/meccanica-esercizi.pdf',
-        size: '1.8 MB',
-        lastAccessed: '2025-08-27',
-        isNew: false
-      },
-      {
-        id: '4',
-        title: 'Quiz Chimica Organica',
-        type: 'quiz',
-        subject: 'Chimica',
-        description: 'Test di autovalutazione sulla chimica organica',
-        url: '/materials/chemistry/quiz-organica.html',
-        lastAccessed: '2025-08-26',
-        isNew: false
-      },
-      {
-        id: '5',
-        title: 'Link Utili: Storia Contemporanea',
-        type: 'link',
-        subject: 'Storia',
-        description: 'Risorse online per lo studio della storia contemporanea',
-        url: 'https://example.com/storia-contemporanea',
-        lastAccessed: '2025-08-24',
-        isNew: true
-      },
-      {
-        id: '6',
-        title: 'Appunti Filosofia Antica',
-        type: 'document',
-        subject: 'Filosofia',
-        description: 'Appunti completi sui filosofi presocratici',
-        url: '/materials/philosophy/filosofia-antica.pdf',
-        size: '3.1 MB',
-        lastAccessed: '2025-08-23',
-        isNew: false
-      }
-    ]
+    const fetchMaterials = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        console.log('🔍 Fetching materials from backend...')
+        
+        // Chiama l'endpoint per ottenere i materiali dello studente
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setMaterials([])
+          return
+        }
 
-    // Simula API call
-    setTimeout(() => {
-      setMaterials(mockMaterials)
-      setLoading(false)
-    }, 1000)
+        // Per ora non c'è un endpoint dedicato ai materiali, impostiamo array vuoto
+        setMaterials([])
+        
+      } catch (err) {
+        console.error('❌ Error fetching materials:', err)
+        setError('Errore nel caricamento dei materiali dal backend.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMaterials()
   }, [])
 
-  const subjects = Array.from(new Set(materials.map(m => m.subject))).sort()
+  const subjects = Array.from(new Set(materials.map(m => m.subject))).sort((a, b) => a.localeCompare(b))
   const filteredMaterials = selectedSubject === 'all' 
     ? materials 
     : materials.filter(m => m.subject === selectedSubject)

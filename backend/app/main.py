@@ -12,10 +12,43 @@ from app.core.database import SessionLocal
 # Create FastAPI app
 app = FastAPI(
     title="Tutoring Platform API",
-    description="API for online tutoring platform",
-    version="1.0.0",
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None
+    description="""
+    ## API per Piattaforma di Tutoring Online
+    
+    Questa API gestisce tutti gli aspetti della piattaforma di tutoring:
+    
+    ### Funzionalità principali:
+    - **Autenticazione**: Login, registrazione, gestione JWT
+    - **Utenti**: Gestione studenti e tutor
+    - **Prenotazioni**: Sistema di booking delle lezioni
+    - **Pagamenti**: Integrazione Stripe e gestione pricing
+    - **Pacchetti**: Pacchetti ore e abbonamenti
+    - **Analytics**: Dashboard e metriche di performance
+    - **Amministrazione**: Panel admin per gestione piattaforma
+    
+    ### Endpoints Dashboard:
+    - `/api/dashboard/live` - Dati real-time
+    - `/api/dashboard/tutor-performance` - Performance tutor
+    - `/api/analytics/metrics` - Metriche generali
+    
+    ### Autenticazione:
+    La maggior parte degli endpoint richiede autenticazione JWT.
+    Usa `/api/auth/login` per ottenere il token.
+    """,
+    version="2.0.0",
+    docs_url="/docs",  # Sempre disponibile in sviluppo
+    redoc_url="/redoc",  # Documentazione alternativa
+    openapi_url="/openapi.json",  # Schema OpenAPI JSON
+    terms_of_service="https://example.com/terms/",
+    contact={
+        "name": "Tutoring Platform Team",
+        "url": "https://example.com/contact/",
+        "email": "dev@example.com",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
 )
 
 # Import models after app creation to avoid circular imports
@@ -30,6 +63,8 @@ from app.payments.routes import router as payments_router
 from app.packages.routes import router as packages_router
 from app.slots.routes import router as slots_router
 from app.analytics.routes import router as analytics_router
+from app.dashboard.routes import router as dashboard_router
+from app.admin.routes import router as admin_router  # 🆕 ADMIN ROUTER
 from app.core.config import settings
 from app.utils.seed import seed_users
 
@@ -55,7 +90,7 @@ app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 app.include_router(packages_router, prefix="/api/packages", tags=["Packages"])
 app.include_router(slots_router, prefix="/api/slots", tags=["Slots"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
-from app.admin.routes import router as admin_router
+app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Dashboard"])
 
 # admin_router already sets its own prefix
 app.include_router(admin_router)

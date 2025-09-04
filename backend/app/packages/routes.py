@@ -45,6 +45,87 @@ async def get_packages(
     else:
         return await services.PackageService.get_all_active_packages(db, skip, limit)
 
+# Package Purchase routes (BEFORE parameterized routes)
+@router.post("/purchases", response_model=schemas.PackagePurchase, tags=["Package Purchases"])
+async def create_package_purchase(
+    purchase_data: schemas.PackagePurchaseCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Purchase a package (Student only)"""
+    if current_user.role != UserRole.STUDENT:
+        raise HTTPException(status_code=403, detail="Student access required")
+    
+    try:
+        return await services.PackagePurchaseService.create_package_purchase(db, purchase_data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/purchases", response_model=List[schemas.PackagePurchase], tags=["Package Purchases"])
+async def get_package_purchases(
+    skip: int = 0,
+    limit: int = 100,
+    student_id: int = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get package purchases"""
+    if student_id:
+        # Admin or the student themselves can view specific student purchases
+        if current_user.role == UserRole.STUDENT:
+            student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
+            if not student or student.id != student_id:
+                raise HTTPException(status_code=403, detail="Access denied")
+        elif current_user.role != UserRole.ADMIN:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        return await services.PackagePurchaseService.get_student_purchases(db, student_id, skip, limit)
+    else:
+        # Students can only see their own purchases
+        if current_user.role == UserRole.STUDENT:
+            student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
+            if not student:
+                raise HTTPException(status_code=404, detail="Student profile not found")
+            return await services.PackagePurchaseService.get_student_purchases(db, student.id, skip, limit)
+        else:
+            raise HTTPException(status_code=403, detail="Access denied")
+
+@router.get("/purchases/active", response_model=List[schemas.PackagePurchase], tags=["Package Purchases"])
+async def get_active_purchases(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get active package purchases for current student"""
+    if current_user.role != UserRole.STUDENT:
+        raise HTTPException(status_code=403, detail="Student access required")
+    
+    student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+    
+    return await services.PackagePurchaseService.get_active_purchases_by_student(db, student.id)
+
+@router.get("/purchases/{purchase_id}", response_model=schemas.PackagePurchaseWithDetails, tags=["Package Purchases"])
+async def get_package_purchase(
+    purchase_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get specific package purchase"""
+    purchase = await services.PackagePurchaseService.get_purchase_by_id(db, purchase_id)
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Package purchase not found")
+    
+    # Check permissions
+    if current_user.role == UserRole.STUDENT:
+        student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
+        if not student or student.id != purchase.student_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    return purchase
+
 @router.get("/{package_id}", response_model=schemas.Package, tags=["Packages"])
 async def get_package(
     package_id: int,
@@ -161,84 +242,3 @@ async def delete_package_link(
 
     success = await services.PackageService.delete_resource_link(db, link_id)
     return {"success": success}
-
-# Package Purchase routes
-@router.post("/purchases", response_model=schemas.PackagePurchase, tags=["Package Purchases"])
-async def create_package_purchase(
-    purchase_data: schemas.PackagePurchaseCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Purchase a package (Student only)"""
-    if current_user.role != UserRole.STUDENT:
-        raise HTTPException(status_code=403, detail="Student access required")
-    
-    try:
-        return await services.PackagePurchaseService.create_package_purchase(db, purchase_data)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.get("/purchases", response_model=List[schemas.PackagePurchase], tags=["Package Purchases"])
-async def get_package_purchases(
-    skip: int = 0,
-    limit: int = 100,
-    student_id: int = None,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Get package purchases"""
-    if student_id:
-        # Admin or the student themselves can view specific student purchases
-        if current_user.role == UserRole.STUDENT:
-            student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
-            if not student or student.id != student_id:
-                raise HTTPException(status_code=403, detail="Access denied")
-        elif current_user.role != UserRole.ADMIN:
-            raise HTTPException(status_code=403, detail="Access denied")
-        
-        return await services.PackagePurchaseService.get_student_purchases(db, student_id, skip, limit)
-    else:
-        # Students can only see their own purchases
-        if current_user.role == UserRole.STUDENT:
-            student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
-            if not student:
-                raise HTTPException(status_code=404, detail="Student profile not found")
-            return await services.PackagePurchaseService.get_student_purchases(db, student.id, skip, limit)
-        else:
-            raise HTTPException(status_code=403, detail="Access denied")
-
-@router.get("/purchases/active", response_model=List[schemas.PackagePurchase], tags=["Package Purchases"])
-async def get_active_purchases(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Get active package purchases for current student"""
-    if current_user.role != UserRole.STUDENT:
-        raise HTTPException(status_code=403, detail="Student access required")
-    
-    student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
-    if not student:
-        raise HTTPException(status_code=404, detail="Student profile not found")
-    
-    return await services.PackagePurchaseService.get_active_purchases_by_student(db, student.id)
-
-@router.get("/purchases/{purchase_id}", response_model=schemas.PackagePurchaseWithDetails, tags=["Package Purchases"])
-async def get_package_purchase(
-    purchase_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Get package purchase by ID"""
-    purchase = await services.PackagePurchaseService.get_purchase_by_id(db, purchase_id)
-    if not purchase:
-        raise HTTPException(status_code=404, detail="Package purchase not found")
-    
-    # Check permissions
-    if current_user.role == UserRole.STUDENT:
-        student = await user_services.UserService.get_student_by_user_id(db, current_user.id)
-        if not student or student.id != purchase.student_id:
-            raise HTTPException(status_code=403, detail="Access denied")
-    elif current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    return purchase

@@ -42,80 +42,35 @@ export default function StudentCalendar({ className }: StudentCalendarProps) {
   const [loading, setLoading] = useState(true)
   const [view, setView] = useState<'dayGridMonth' | 'timeGridWeek' | 'listWeek'>('dayGridMonth')
 
-  // Mock data per sviluppo - sarà sostituito con API call
+  // API call per ottenere gli eventi del calendario
   useEffect(() => {
-    const mockEvents: CalendarEvent[] = [
-      {
-        id: '1',
-        title: 'Matematica - Prof. Rossi',
-        start: '2025-09-02T14:00:00',
-        end: '2025-09-02T15:30:00',
-        type: 'lesson',
-        status: 'confirmed',
-        subject: 'Matematica',
-        tutor: 'Prof. Rossi',
-        location: 'Online',
-        description: 'Calcolo differenziale - Integrali'
-      },
-      {
-        id: '2',
-        title: 'Fisica - Prof. Bianchi',
-        start: '2025-09-03T16:00:00',
-        end: '2025-09-03T17:30:00',
-        type: 'lesson',
-        status: 'pending',
-        subject: 'Fisica',
-        tutor: 'Prof. Bianchi',
-        location: 'Aula 3',
-        description: 'Meccanica classica - Dinamica'
-      },
-      {
-        id: '3',
-        title: 'Scadenza Pacchetto Matematica',
-        start: '2025-09-15T00:00:00',
-        end: '2025-09-15T23:59:59',
-        type: 'deadline',
-        subject: 'Matematica',
-        description: 'Pacchetto ore in scadenza - 12 ore rimanenti'
-      },
-      {
-        id: '4',
-        title: 'Esame Chimica',
-        start: '2025-09-20T09:00:00',
-        end: '2025-09-20T11:00:00',
-        type: 'exam',
-        subject: 'Chimica',
-        location: 'Aula Magna',
-        description: 'Esame finale chimica organica'
-      },
-      {
-        id: '5',
-        title: 'Chimica - Prof. Verdi',
-        start: '2025-09-04T10:00:00',
-        end: '2025-09-04T11:30:00',
-        type: 'lesson',
-        status: 'confirmed',
-        subject: 'Chimica',
-        tutor: 'Prof. Verdi',
-        location: 'Laboratorio B',
-        description: 'Chimica inorganica - Reazioni'
-      },
-      {
-        id: '6',
-        title: 'Promemoria: Compiti Matematica',
-        start: '2025-09-05T18:00:00',
-        end: '2025-09-05T18:00:00',
-        type: 'reminder',
-        subject: 'Matematica',
-        description: 'Consegnare esercizi calcolo differenziale'
-      }
-    ]
+    // API call per ottenere gli eventi del calendario
+    const fetchCalendarEvents = async () => {
+      try {
+        setLoading(true)
+        
+        console.log('🔍 Fetching calendar events from backend...')
+        
+        // Chiama l'endpoint per ottenere gli eventi del calendario
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setEvents([])
+          return
+        }
 
-    // Simula API call
-    setTimeout(() => {
-      setEvents(mockEvents)
-      setLoading(false)
-    }, 1000)
+        // Per ora non c'è un endpoint dedicato al calendario, impostiamo array vuoto
+        setEvents([])
+        
+      } catch (err) {
+        console.error('❌ Error fetching calendar events:', err)
+        setEvents([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCalendarEvents()
   }, [])
 
   // Formatta eventi per FullCalendar

@@ -12,7 +12,7 @@ export default function LearningProgressWidget() {
     setError(null)
     setLoading(true)
     try {
-      // Gate: ensure profile exists, otherwise fallback to 0%
+      // Verifica che il profilo studente esista, altrimenti imposta progresso a 0%
       try {
         await api.get('/api/users/me/student')
       } catch (e) {

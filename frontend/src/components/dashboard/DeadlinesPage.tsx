@@ -101,106 +101,37 @@ export default function DeadlinesPage({ className }: DeadlinesPageProps) {
   const [selectedType, setSelectedType] = useState<string>('all')
   const [showCompleted, setShowCompleted] = useState(false)
 
-  // Mock data per sviluppo - sarà sostituito con API call
+  // API call per ottenere le scadenze
   useEffect(() => {
-    const mockDeadlines: Deadline[] = [
-      {
-        id: '1',
-        title: 'Pacchetto Matematica Base',
-        type: 'package_expiry',
-        dueDate: '2025-09-15T23:59:59',
-        priority: 'critical',
-        subject: 'Matematica',
-        description: 'Pacchetto ore in scadenza - 12 ore rimanenti. Prenota le tue lezioni prima della scadenza.',
-        status: 'pending',
-        actionRequired: true,
-        actionText: 'Prenota Lezione',
-        actionUrl: '/dashboard/student/book-lesson',
-        hoursRemaining: 48,
-        daysRemaining: 2
-      },
-      {
-        id: '2',
-        title: 'Compito Calcolo Differenziale',
-        type: 'assignment_due',
-        dueDate: '2025-09-10T23:59:59',
-        priority: 'high',
-        subject: 'Matematica',
-        description: 'Consegnare esercizi su calcolo differenziale e integrali. Peso: 30% voto finale.',
-        status: 'pending',
-        actionRequired: true,
-        actionText: 'Carica Compito',
-        actionUrl: '/dashboard/student/assignments',
-        hoursRemaining: 120,
-        daysRemaining: 5
-      },
-      {
-        id: '3',
-        title: 'Esame Chimica Organica',
-        type: 'exam_date',
-        dueDate: '2025-09-20T09:00:00',
-        priority: 'high',
-        subject: 'Chimica',
-        description: 'Esame finale chimica organica. Portare calcolatrice e tavola periodica.',
-        status: 'pending',
-        actionRequired: true,
-        actionText: 'Vedi Dettagli',
-        actionUrl: '/dashboard/student/exams',
-        hoursRemaining: 240,
-        daysRemaining: 10
-      },
-      {
-        id: '4',
-        title: 'Pagamento Pacchetto Fisica',
-        type: 'payment_due',
-        dueDate: '2025-09-05T23:59:59',
-        priority: 'medium',
-        subject: 'Fisica',
-        description: 'Pagamento scaduto per pacchetto fisica avanzato. Completa il pagamento per evitare sospensioni.',
-        status: 'overdue',
-        actionRequired: true,
-        actionText: 'Completa Pagamento',
-        actionUrl: '/dashboard/student/payments',
-        hoursRemaining: -24,
-        daysRemaining: -1
-      },
-      {
-        id: '5',
-        title: 'Compito Meccanica Classica',
-        type: 'assignment_due',
-        dueDate: '2025-09-08T23:59:59',
-        priority: 'medium',
-        subject: 'Fisica',
-        description: 'Esercizi su meccanica classica e dinamica. Consegna online tramite piattaforma.',
-        status: 'completed',
-        actionRequired: false,
-        actionText: 'Vedi Consegnato',
-        actionUrl: '/dashboard/student/assignments',
-        hoursRemaining: 0,
-        daysRemaining: 0
-      },
-      {
-        id: '6',
-        title: 'Fine Abbonamento Mensile',
-        type: 'subscription_end',
-        dueDate: '2025-09-30T23:59:59',
-        priority: 'low',
-        subject: 'Generale',
-        description: 'Il tuo abbonamento mensile scade. Rinnova per continuare ad accedere ai servizi premium.',
-        status: 'pending',
-        actionRequired: true,
-        actionText: 'Rinnova Abbonamento',
-        actionUrl: '/dashboard/student/subscription',
-        hoursRemaining: 480,
-        daysRemaining: 20
-      }
-    ]
 
-    // Simula API call
-    setTimeout(() => {
-      setDeadlines(mockDeadlines)
-      setLoading(false)
-    }, 1000)
+
+    // API call per ottenere le scadenze
+    const fetchDeadlines = async () => {
+      try {
+        setLoading(true)
+        
+        console.log('🔍 Fetching deadlines from backend...')
+        
+        // Chiama l'endpoint per ottenere le scadenze dello studente
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setDeadlines([])
+          return
+        }
+
+        // Per ora non c'è un endpoint dedicato alle scadenze, impostiamo array vuoto
+        setDeadlines([])
+        
+      } catch (err) {
+        console.error('❌ Error fetching deadlines:', err)
+        setDeadlines([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDeadlines()
   }, [])
 
   const priorities = Array.from(new Set(deadlines.map(d => d.priority)))

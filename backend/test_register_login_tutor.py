@@ -66,6 +66,41 @@ def get_profile(token: str, tutor: bool = False):
         return False
 
 
+def test_dashboard_endpoints(token: str):
+    """Test degli endpoint dashboard con autenticazione"""
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # Test endpoint dashboard live
+    print("\n📊 Testing dashboard endpoints...")
+    
+    endpoints_to_test = [
+        "/dashboard/live",
+        "/dashboard/tutor-performance", 
+        "/dashboard/today",
+        "/dashboard/alerts"
+    ]
+    
+    for endpoint in endpoints_to_test:
+        url = f"{BASE_URL}{endpoint}"
+        try:
+            resp = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+            print(f"Dashboard {endpoint}: {resp.status_code}")
+            if resp.status_code == 200:
+                print(f"✅ {endpoint} OK")
+                # Print first few keys to verify data structure
+                if resp.headers.get('content-type', '').startswith('application/json'):
+                    data = resp.json()
+                    if isinstance(data, dict):
+                        keys = list(data.keys())[:5]  # First 5 keys
+                        print(f"   Data keys: {keys}")
+            else:
+                print(f"❌ {endpoint} failed: {resp.status_code} - {resp.text[:200]}")
+        except requests.RequestException as e:
+            print(f"❌ Errore di rete per {endpoint}: {e}")
+    
+    return True
+
+
 if __name__ == '__main__':
     ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     email = f"test.tutor.{ts}@example.com"
@@ -83,3 +118,8 @@ if __name__ == '__main__':
     # check both generic user profile and tutor profile
     get_profile(token, tutor=False)
     get_profile(token, tutor=True)
+    
+    # Test dashboard endpoints
+    test_dashboard_endpoints(token)
+    
+    print("\n🎉 Tutti i test completati con successo!")

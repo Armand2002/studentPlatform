@@ -1,8 +1,7 @@
 "use client"
-import ActivePackagesWidget from '@/components/dashboard/ActivePackagesWidget'
+import PackageOverviewWidget from '@/components/dashboard/PackageOverviewWidget'
 import UpcomingLessonsWidget from '@/components/dashboard/UpcomingLessonsWidget'
 import QuickActionsWidget from '@/components/dashboard/QuickActionsWidget'
-import LearningProgressWidget from '@/components/dashboard/LearningProgressWidget'
 import StudentCalendar from '@/components/dashboard/StudentCalendar'
 import RequireAuth from '@/components/auth/RequireAuth'
 import { useAuth } from '@/contexts/AuthContext'
@@ -24,11 +23,10 @@ export default function StudentDashboardPage() {
           </div>
 
           {/* Dashboard widgets */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            <ActivePackagesWidget />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <PackageOverviewWidget />
             <UpcomingLessonsWidget />
             <QuickActionsWidget />
-            <LearningProgressWidget />
           </div>
 
           {/* Calendar section */}

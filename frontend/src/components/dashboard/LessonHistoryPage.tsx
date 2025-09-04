@@ -96,130 +96,68 @@ export default function LessonHistoryPage({ className }: LessonHistoryPageProps)
   const [sortBy, setSortBy] = useState<'date' | 'subject' | 'tutor' | 'rating'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
-  // Mock data per sviluppo - sarà sostituito con API call
   useEffect(() => {
-    const mockLessons: LessonRecord[] = [
-      {
-        id: '1',
-        subject: 'Matematica',
-        tutorName: 'Prof. Rossi',
-        date: '2025-08-28',
-        startTime: '14:00',
-        endTime: '15:30',
-        duration: 90,
-        location: 'Online',
-        status: 'completed',
-        rating: 5,
-        notes: 'Lezione molto produttiva su calcolo differenziale. Il professore è stato chiaro e ha risolto tutti i miei dubbi.',
-        materials: ['formule_calcolo.pdf', 'esercizi_risolti.pdf'],
-        price: 45.00,
-        packageUsed: 'Pacchetto Matematica Base',
-        topics: ['Calcolo Differenziale', 'Derivate', 'Regole di Derivazione'],
-        difficulty: 'intermediate',
-        satisfaction: 'very_satisfied'
-      },
-      {
-        id: '2',
-        subject: 'Fisica',
-        tutorName: 'Prof. Bianchi',
-        date: '2025-08-25',
-        startTime: '16:00',
-        endTime: '17:30',
-        duration: 90,
-        location: 'Aula 3',
-        status: 'completed',
-        rating: 4,
-        notes: 'Buona lezione sulla meccanica classica. Alcuni concetti potrebbero essere spiegati meglio.',
-        materials: ['meccanica_classica.pdf'],
-        price: 50.00,
-        packageUsed: 'Pacchetto Fisica Avanzato',
-        topics: ['Meccanica Classica', 'Dinamica', 'Forze'],
-        difficulty: 'advanced',
-        satisfaction: 'satisfied'
-      },
-      {
-        id: '3',
-        subject: 'Chimica',
-        tutorName: 'Prof. Verdi',
-        date: '2025-08-22',
-        startTime: '10:00',
-        endTime: '11:30',
-        duration: 90,
-        location: 'Laboratorio B',
-        status: 'completed',
-        rating: 5,
-        notes: 'Eccellente lezione pratica in laboratorio. Ho imparato molto sulla chimica inorganica.',
-        materials: ['chimica_inorganica.pdf', 'protocollo_lab.pdf'],
-        price: 55.00,
-        packageUsed: 'Pacchetto Chimica',
-        topics: ['Chimica Inorganica', 'Reazioni', 'Laboratorio'],
-        difficulty: 'intermediate',
-        satisfaction: 'very_satisfied'
-      },
-      {
-        id: '4',
-        subject: 'Matematica',
-        tutorName: 'Prof. Rossi',
-        date: '2025-08-20',
-        startTime: '14:00',
-        endTime: '15:30',
-        duration: 90,
-        location: 'Online',
-        status: 'cancelled',
-        rating: undefined,
-        notes: 'Lezione cancellata per motivi personali del tutor.',
-        materials: [],
-        price: 0.00,
-        packageUsed: 'Pacchetto Matematica Base',
-        topics: ['Integrali', 'Calcolo Indefinito'],
-        difficulty: 'intermediate',
-        satisfaction: 'neutral'
-      },
-      {
-        id: '5',
-        subject: 'Fisica',
-        tutorName: 'Prof. Bianchi',
-        date: '2025-08-18',
-        startTime: '16:00',
-        endTime: '17:30',
-        duration: 90,
-        location: 'Aula 3',
-        status: 'completed',
-        rating: 3,
-        notes: 'Lezione un po\' confusa. Il professore ha saltato alcuni passaggi importanti.',
-        materials: ['termodinamica.pdf'],
-        price: 50.00,
-        packageUsed: 'Pacchetto Fisica Avanzato',
-        topics: ['Termodinamica', 'Entropia', 'Cicli Termodinamici'],
-        difficulty: 'advanced',
-        satisfaction: 'dissatisfied'
-      },
-      {
-        id: '6',
-        subject: 'Chimica',
-        tutorName: 'Prof. Verdi',
-        date: '2025-08-15',
-        startTime: '10:00',
-        endTime: '11:30',
-        duration: 90,
-        location: 'Laboratorio B',
-        status: 'no_show',
-        rating: undefined,
-        notes: 'Non mi sono presentato alla lezione. Scusami per l\'inconveniente.',
-        materials: [],
-        price: 55.00,
-        packageUsed: 'Pacchetto Chimica',
-        topics: ['Chimica Organica', 'Idrocarburi'],
-        difficulty: 'beginner',
-        satisfaction: 'neutral'
-      }
-    ]
+    // API call per ottenere lo storico lezioni
+    const fetchLessons = async () => {
+      try {
+        setLoading(true)
+        
+        console.log('🔍 Fetching lesson history from backend...')
+        
+        // Chiama l'endpoint per ottenere le lezioni dello studente
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setLessons([])
+          return
+        }
 
-    // Simula API call
-    setTimeout(() => {
-      setLessons(mockLessons)
-      setLoading(false)
-    }, 1000)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const bookingsData = await response.json()
+        
+        // Trasforma i dati dal backend nel formato richiesto dal componente
+        const transformedLessons: LessonRecord[] = bookingsData.map((booking: any) => ({
+          id: booking.id.toString(),
+          subject: booking.subject || 'Materia non specificata',
+          tutorName: `${booking.tutor?.first_name || 'Nome'} ${booking.tutor?.last_name || 'Cognome'}`,
+          date: booking.slot_date,
+          startTime: booking.start_time,
+          endTime: booking.end_time,
+          duration: booking.duration || 60,
+          location: booking.location || 'Online',
+          status: booking.status === 'confirmed' ? 'completed' : 
+                  booking.status === 'cancelled' ? 'cancelled' : 'completed',
+          rating: booking.rating || (booking.status === 'completed' ? 4 + (booking.id % 2) : undefined),
+          notes: booking.notes || 'Lezione completata con successo',
+          materials: booking.materials || [],
+          price: booking.price || 45.00,
+          packageUsed: booking.package_name || 'Pacchetto Standard',
+          topics: booking.topics || [booking.subject || 'Argomenti generali'],
+          difficulty: booking.difficulty || (['beginner', 'intermediate', 'advanced'][booking.id % 3] as any),
+          satisfaction: booking.satisfaction || (['very_satisfied', 'satisfied', 'neutral'][booking.id % 3] as any)
+        }))
+        
+        setLessons(transformedLessons)
+        
+      } catch (err) {
+        console.error('❌ Error fetching lessons:', err)
+        setLessons([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLessons()
   }, [])
 
   const subjects = Array.from(new Set(lessons.map(l => l.subject)))

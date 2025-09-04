@@ -8,6 +8,11 @@ import StudentsWidget from '@/components/dashboard/tutor/StudentsWidget'
 import AvailabilityWidget from '@/components/dashboard/tutor/AvailabilityWidget'
 import MaterialsLink from '@/components/materials/MaterialsLink'
 import PerformanceWidget from '@/components/dashboard/tutor/PerformanceWidget'
+import { RevenueChart } from '@/components/dashboard/tutor/RevenueChart'
+import { EarningsBreakdown } from '@/components/dashboard/tutor/EarningsBreakdown'
+import { PerformanceMetrics } from '@/components/dashboard/tutor/PerformanceMetrics'
+import { StudentList } from '@/components/dashboard/tutor/StudentList'
+import { LessonCalendar } from '@/components/dashboard/tutor/LessonCalendar'
 
 export default function TutorDashboardPage() {
   const { user } = useAuth()
@@ -25,7 +30,26 @@ export default function TutorDashboardPage() {
             </p>
           </div>
 
-          {/* Main widgets */}
+          {/* Performance Metrics Row - Giorno 10 */}
+          <PerformanceMetrics />
+
+          {/* Revenue Section - Giorno 10 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <RevenueChart />
+            </div>
+            <div className="lg:col-span-1">
+              <EarningsBreakdown />
+            </div>
+          </div>
+
+          {/* Calendar and Students Section - Giorno 10 */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <LessonCalendar />
+            <StudentList />
+          </div>
+
+          {/* Legacy widgets */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             <EarningsWidget />
             <StudentsWidget />

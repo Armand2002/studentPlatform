@@ -1,5 +1,7 @@
 "use client"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { api } from '@/lib/api'
+import { isAxiosError } from 'axios'
 import { 
   PlusIcon,
   CalendarDaysIcon,
@@ -95,32 +97,74 @@ const quickActions: QuickAction[] = [
   }
 ]
 
-const recentActivities = [
-  {
-    id: '1',
-    action: 'Lezione prenotata',
-    subject: 'Matematica',
-    time: '2 ore fa',
-    icon: CalendarDaysIcon
-  },
-  {
-    id: '2',
-    action: 'Materiale scaricato',
-    subject: 'Fisica',
-    time: '1 giorno fa',
-    icon: DocumentTextIcon
-  },
-  {
-    id: '3',
-    action: 'Pacchetto acquistato',
-    subject: 'Chimica',
-    time: '3 giorni fa',
-    icon: BookOpenIcon
-  }
-]
+// Interfacce per i dati dinamici
+interface RecentActivity {
+  id: string
+  action: string
+  subject: string
+  time: string
+  icon: any
+}
+
+interface QuickStats {
+  weeklyHours: number
+  completedLessons: number
+  progressPercentage: number
+}
 
 export default function QuickActionsWidget({ className }: QuickActionsWidgetProps) {
   const [hoveredAction, setHoveredAction] = useState<string | null>(null)
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
+  const [quickStats, setQuickStats] = useState<QuickStats>({
+    weeklyHours: 0,
+    completedLessons: 0,
+    progressPercentage: 0
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // API call per ottenere attività recenti e statistiche
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        console.log('🔍 Fetching recent activities and stats from backend...')
+        
+        // Chiama l'endpoint per ottenere le attività recenti
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setRecentActivities([])
+          setQuickStats({ weeklyHours: 0, completedLessons: 0, progressPercentage: 0 })
+          return
+        }
+
+        // Per ora non ci sono endpoint dedicati, impostiamo valori di default
+        setRecentActivities([])
+        setQuickStats({
+          weeklyHours: 0,
+          completedLessons: 0,
+          progressPercentage: 0
+        })
+        
+      } catch (err) {
+        console.error('❌ Error fetching activities and stats:', err)
+        setError('Errore nel caricamento delle attività')
+        setRecentActivities([])
+        setQuickStats({
+          weeklyHours: 0,
+          completedLessons: 0,
+          progressPercentage: 0
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleActionClick = (action: QuickAction) => {
     // In futuro: navigazione reale
@@ -203,7 +247,31 @@ export default function QuickActionsWidget({ className }: QuickActionsWidgetProp
           Attività Recenti
         </h4>
         <div className="space-y-2">
-          {recentActivities.map((activity) => (
+          {loading && (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-2 rounded-lg">
+                  <div className="w-6 h-6 bg-background-secondary rounded animate-pulse"></div>
+                  <div className="flex-1 space-y-1">
+                    <div className="h-3 bg-background-secondary rounded animate-pulse"></div>
+                    <div className="h-2 bg-background-secondary rounded animate-pulse w-2/3"></div>
+                  </div>
+                  <div className="h-2 bg-background-secondary rounded animate-pulse w-12"></div>
+                </div>
+              ))}
+            </div>
+          )}
+          {!loading && error && (
+            <div className="text-xs text-red-600 p-2">
+              {error}
+            </div>
+          )}
+          {!loading && !error && recentActivities.length === 0 && (
+            <div className="text-xs text-foreground-muted p-2 text-center">
+              Nessuna attività recente
+            </div>
+          )}
+          {!loading && !error && recentActivities.length > 0 && recentActivities.map((activity) => (
             <div 
               key={activity.id}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-background-secondary transition-colors"
@@ -224,15 +292,33 @@ export default function QuickActionsWidget({ className }: QuickActionsWidgetProp
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div className="text-center p-3 bg-background-secondary/50 border border-border rounded-lg">
-          <div className="text-lg font-bold text-primary">12</div>
+          <div className="text-lg font-bold text-primary">
+            {loading ? (
+              <div className="h-6 bg-background-secondary rounded animate-pulse"></div>
+            ) : (
+              quickStats.weeklyHours
+            )}
+          </div>
           <div className="text-xs text-foreground-muted">Ore questa settimana</div>
         </div>
         <div className="text-center p-3 bg-background-secondary/50 border border-border rounded-lg">
-          <div className="text-lg font-bold text-green-500">3</div>
+          <div className="text-lg font-bold text-green-500">
+            {loading ? (
+              <div className="h-6 bg-background-secondary rounded animate-pulse"></div>
+            ) : (
+              quickStats.completedLessons
+            )}
+          </div>
           <div className="text-xs text-foreground-muted">Lezioni completate</div>
         </div>
         <div className="text-center p-3 bg-background-secondary/50 border border-border rounded-lg">
-          <div className="text-lg font-bold text-blue-500">85%</div>
+          <div className="text-lg font-bold text-blue-500">
+            {loading ? (
+              <div className="h-6 bg-background-secondary rounded animate-pulse"></div>
+            ) : (
+              `${quickStats.progressPercentage}%`
+            )}
+          </div>
           <div className="text-xs text-foreground-muted">Progresso</div>
         </div>
       </div>

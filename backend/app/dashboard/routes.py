@@ -12,8 +12,19 @@ from app.auth.dependencies import get_current_user
 from app.users.models import User, UserRole
 from app.dashboard.services import DashboardRealTimeService
 
+router = APIRouter(
+    tags=["📊 Dashboard Real-Time"],
+    responses={
+        404: {"description": "Endpoint not found"},
+        403: {"description": "Access denied - Admin or Tutor role required"},
+        401: {"description": "Authentication required"}
+    }
+)
 
-router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+@router.get("/test")
+async def test_dashboard():
+    """Test endpoint per verificare che il router dashboard funzioni"""
+    return {"message": "Dashboard router is working!", "timestamp": datetime.now().isoformat()}
 
 
 def require_dashboard_access(current_user: User = Depends(get_current_user)):
@@ -27,7 +38,25 @@ def require_dashboard_access(current_user: User = Depends(get_current_user)):
 # LIVE DASHBOARD ENDPOINTS
 # ================================
 
-@router.get("/live")
+@router.get(
+    "/live",
+    summary="📊 Dashboard Live Completo",
+    description="""
+    **Dashboard principale con tutti i widget live**
+    
+    Fornisce tutti i dati necessari per la dashboard real-time:
+    - Lezioni di oggi (completate, in corso, prossime, cancellate)
+    - Revenue giornaliero e guadagni tutor
+    - Tutors e studenti attivi oggi
+    - KPI operazionali e tassi di conversione
+    
+    ⚡ **Real-time**: Aggiorna automaticamente ogni 30 secondi
+    📅 **Filtro**: Solo dati della giornata corrente (TODAY())
+    🔒 **Accesso**: Richiede ruolo Admin o Tutor
+    """,
+    response_description="Dati dashboard completi per la giornata corrente",
+    tags=["📊 Dashboard Live"]
+)
 async def get_live_dashboard(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_dashboard_access)

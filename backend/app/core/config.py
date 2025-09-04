@@ -7,7 +7,7 @@ import os
 
 class Settings(BaseSettings):
     # App
-    DEBUG: bool = False
+    DEBUG: bool = True  # Abilitato per sviluppo
     PROJECT_NAME: str = "Tutoring Platform"
     VERSION: str = "1.0.0"
     

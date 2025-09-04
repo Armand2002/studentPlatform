@@ -34,52 +34,74 @@ export default function UpcomingLessonsWidget({ className }: UpcomingLessonsWidg
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Mock data per sviluppo - sarà sostituito con API call
   useEffect(() => {
-    const mockLessons: LessonData[] = [
-      {
-        id: '1',
-        subject: 'Matematica - Calcolo Differenziale',
-        tutorName: 'Prof. Rossi',
-        date: '2025-08-31',
-        time: '15:00',
-        duration: 90,
-        location: 'Online (Zoom)',
-        status: 'confirmed',
-        isToday: true,
-        isTomorrow: false
-      },
-      {
-        id: '2',
-        subject: 'Fisica - Meccanica Quantistica',
-        tutorName: 'Prof. Bianchi',
-        date: '2025-09-02',
-        time: '10:30',
-        duration: 60,
-        location: 'Studio Via Roma 123',
-        status: 'confirmed',
-        isToday: false,
-        isTomorrow: false
-      },
-      {
-        id: '3',
-        subject: 'Chimica - Reazioni Organiche',
-        tutorName: 'Prof. Verdi',
-        date: '2025-09-05',
-        time: '14:00',
-        duration: 75,
-        location: 'Online (Teams)',
-        status: 'pending',
-        isToday: false,
-        isTomorrow: false
-      }
-    ]
+    // API call per ottenere le lezioni in arrivo
+    const fetchUpcomingLessons = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        console.log('🔍 Fetching upcoming lessons from backend...')
+        
+        // Chiama l'endpoint per ottenere le lezioni future dello studente
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setLessons([])
+          return
+        }
 
-    // Simula API call
-    setTimeout(() => {
-      setLessons(mockLessons)
-      setLoading(false)
-    }, 1000)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const bookingsData = await response.json()
+        
+        // Filtra solo le lezioni future e trasforma i dati
+        const today = new Date()
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+
+        const transformedLessons: LessonData[] = bookingsData
+          .filter((booking: any) => {
+            const lessonDate = new Date(booking.slot_date)
+            return lessonDate >= today && booking.status !== 'cancelled'
+          })
+          .map((booking: any) => {
+            const lessonDate = new Date(booking.slot_date)
+            return {
+              id: booking.id.toString(),
+              subject: booking.subject || 'Materia non specificata',
+              tutorName: `${booking.tutor?.first_name || 'Nome'} ${booking.tutor?.last_name || 'Cognome'}`,
+              date: booking.slot_date,
+              time: booking.start_time,
+              duration: booking.duration || 60,
+              location: booking.location || 'Online',
+              status: booking.status === 'confirmed' ? 'confirmed' : 'pending',
+              isToday: lessonDate.toDateString() === today.toDateString(),
+              isTomorrow: lessonDate.toDateString() === tomorrow.toDateString()
+            }
+          })
+        
+        setLessons(transformedLessons)
+        
+      } catch (err) {
+        console.error('❌ Error fetching upcoming lessons:', err)
+        setError('Errore nel caricamento delle lezioni in arrivo dal backend.')
+        setLessons([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUpcomingLessons()
   }, [])
 
   const formatDate = (dateString: string) => {

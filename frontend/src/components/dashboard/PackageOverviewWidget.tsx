@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
+import { packageService, UserPackageData } from '@/lib/api-services/packages'
 
 interface PackageData {
   id: string
@@ -28,56 +29,46 @@ export default function PackageOverviewWidget({ className }: PackageOverviewWidg
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Mock data per sviluppo - sarà sostituito con API call
+  // API call per ottenere i pacchetti dell'utente usando il servizio real
   useEffect(() => {
-    const mockPackages: PackageData[] = [
-      {
-        id: '1',
-        name: 'Pacchetto Matematica Base',
-        totalHours: 20,
-        remainingHours: 12,
-        expiryDate: '2025-09-15',
-        subject: 'Matematica',
-        isExpiringSoon: true
-      },
-      {
-        id: '2',
-        name: 'Pacchetto Fisica Avanzato',
-        totalHours: 15,
-        remainingHours: 8,
-        expiryDate: '2025-10-20',
-        subject: 'Fisica',
-        isExpiringSoon: false
-      },
-      {
-        id: '3',
-        name: 'Pacchetto Chimica',
-        totalHours: 10,
-        remainingHours: 3,
-        expiryDate: '2025-08-30',
-        subject: 'Chimica',
-        isExpiringSoon: true
+    const fetchPackages = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        console.log('🔍 Fetching packages from backend...')
+        
+        // Chiamata API reale usando il servizio packages
+        const backendPackages = await packageService.getUserPackages()
+        console.log('📦 Backend packages response:', backendPackages)
+        
+        // Trasforma i pacchetti dal backend
+        const transformedPackages: PackageData[] = backendPackages.map((pkg: UserPackageData) => ({
+          id: pkg.id || 'unknown',
+          name: pkg.package?.name || pkg.customName || 'Pacchetto Sconosciuto',
+          totalHours: pkg.totalHours || 0,
+          remainingHours: pkg.remainingHours || 0,
+          expiryDate: pkg.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          subject: pkg.package?.subjects?.[0] || 'Generale',
+          isExpiringSoon: pkg.isExpiringSoon || false
+        }))
+        
+        console.log('✅ Packages transformed:', transformedPackages)
+        setPackages(transformedPackages)
+      } catch (err) {
+        console.error('❌ Error fetching packages:', err)
+        setError('Errore nel caricamento dei pacchetti dal backend.')
+      } finally {
+        setLoading(false)
       }
-    ]
+    }
 
-    // Simula API call
-    setTimeout(() => {
-      setPackages(mockPackages)
-      setLoading(false)
-    }, 1000)
+    fetchPackages()
   }, [])
 
   const totalRemainingHours = packages.reduce((sum, pkg) => sum + pkg.remainingHours, 0)
   const totalPurchasedHours = packages.reduce((sum, pkg) => sum + pkg.totalHours, 0)
   const overallProgress = totalPurchasedHours > 0 ? ((totalPurchasedHours - totalRemainingHours) / totalPurchasedHours) * 100 : 0
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('it-IT', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    })
-  }
 
   const getDaysUntilExpiry = (dateString: string) => {
     const today = new Date()
@@ -209,12 +200,11 @@ export default function PackageOverviewWidget({ className }: PackageOverviewWidg
                     <CheckCircleIcon className="h-3 w-3" />
                   )}
                   <span>
-                    {daysUntilExpiry <= 0 
-                      ? 'Scaduto' 
-                      : daysUntilExpiry === 1 
-                        ? 'Scade domani' 
-                        : `Scade tra ${daysUntilExpiry} giorni`
-                    }
+                    {(() => {
+                      if (daysUntilExpiry <= 0) return 'Scaduto'
+                      if (daysUntilExpiry === 1) return 'Scade domani'
+                      return `Scade tra ${daysUntilExpiry} giorni`
+                    })()}
                   </span>
                 </div>
               </div>

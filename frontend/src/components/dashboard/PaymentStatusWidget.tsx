@@ -70,58 +70,67 @@ export default function PaymentStatusWidget({ className }: PaymentStatusWidgetPr
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Mock data per sviluppo - sarà sostituito con API call
   useEffect(() => {
-    const mockPayments: PaymentData[] = [
-      {
-        id: '1',
-        amount: 150.00,
-        description: 'Pacchetto Matematica Base - 20 ore',
-        status: 'completed',
-        date: '2025-08-25',
-        method: 'card',
-        packageName: 'Matematica Base',
-        isOverdue: false
-      },
-      {
-        id: '2',
-        amount: 120.00,
-        description: 'Pacchetto Fisica Avanzato - 15 ore',
-        status: 'pending',
-        date: '2025-08-28',
-        dueDate: '2025-09-05',
-        method: 'bank_transfer',
-        packageName: 'Fisica Avanzato',
-        isOverdue: false
-      },
-      {
-        id: '3',
-        amount: 80.00,
-        description: 'Pacchetto Chimica - 10 ore',
-        status: 'failed',
-        date: '2025-08-27',
-        method: 'card',
-        packageName: 'Chimica',
-        isOverdue: false
-      },
-      {
-        id: '4',
-        amount: 200.00,
-        description: 'Pacchetto Inglese - 25 ore',
-        status: 'pending',
-        date: '2025-08-20',
-        dueDate: '2025-08-30',
-        method: 'paypal',
-        packageName: 'Inglese',
-        isOverdue: true
-      }
-    ]
+    // API call per ottenere lo stato dei pagamenti
+    const fetchPayments = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        console.log('🔍 Fetching payments from backend...')
+        
+        // Chiama l'endpoint per ottenere i pagamenti dello studente
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setPayments([])
+          return
+        }
 
-    // Simula API call
-    setTimeout(() => {
-      setPayments(mockPayments)
-      setLoading(false)
-    }, 1000)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const paymentsData = await response.json()
+        
+        // Trasforma i dati dal backend nel formato richiesto dal componente
+        const transformedPayments: PaymentData[] = paymentsData.map((payment: any) => {
+          const paymentDate = new Date(payment.created_at || payment.date)
+          const dueDate = payment.due_date ? new Date(payment.due_date) : null
+          const isOverdue = dueDate ? dueDate < new Date() && payment.status === 'pending' : false
+
+          return {
+            id: payment.id.toString(),
+            amount: payment.amount || 0,
+            description: payment.description || `Pagamento per ${payment.package_name || 'servizio'}`,
+            status: payment.status || 'pending',
+            date: payment.created_at || payment.date,
+            dueDate: payment.due_date,
+            method: payment.payment_method || 'card',
+            packageName: payment.package_name,
+            isOverdue
+          }
+        })
+        
+        setPayments(transformedPayments)
+        
+      } catch (err) {
+        console.error('❌ Error fetching payments:', err)
+        setError('Errore nel caricamento dei pagamenti dal backend.')
+        setPayments([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPayments()
   }, [])
 
   const totalSpent = payments

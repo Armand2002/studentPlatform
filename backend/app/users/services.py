@@ -210,3 +210,17 @@ class UserService:
     async def get_tutor_with_user(db: Session, tutor_id: int) -> Optional[models.Tutor]:
         """Get tutor with user information"""
         return db.query(models.Tutor).filter(models.Tutor.id == tutor_id).first()
+    
+    @staticmethod
+    async def get_tutor_assigned_students(db: Session, tutor_id: int) -> List[models.Student]:
+        """Get students assigned to a specific tutor via bookings"""
+        from app.bookings.models import Booking
+        
+        # Query per trovare tutti gli studenti che hanno booking con questo tutor
+        students = db.query(models.Student).join(
+            Booking, models.Student.id == Booking.student_id
+        ).filter(
+            Booking.tutor_id == tutor_id
+        ).distinct().all()
+        
+        return students

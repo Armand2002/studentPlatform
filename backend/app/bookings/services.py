@@ -12,6 +12,94 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
 
+class BookingService:
+    """
+    Base BookingService - API compatibility layer
+    Provides basic CRUD operations needed by routes
+    """
+    
+    @staticmethod
+    async def get_student_bookings(
+        db: Session, 
+        student_id: int, 
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[models.Booking]:
+        """Get all bookings for a student"""
+        return db.query(models.Booking).filter(
+            models.Booking.student_id == student_id
+        ).offset(skip).limit(limit).all()
+    
+    @staticmethod
+    async def get_tutor_bookings(
+        db: Session, 
+        tutor_id: int, 
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[models.Booking]:
+        """Get all bookings for a tutor"""
+        return db.query(models.Booking).filter(
+            models.Booking.tutor_id == tutor_id
+        ).offset(skip).limit(limit).all()
+    
+    @staticmethod
+    async def get_upcoming_bookings_all(
+        db: Session, 
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[models.Booking]:
+        """Get all upcoming bookings (admin only)"""
+        now = datetime.utcnow()
+        return db.query(models.Booking).filter(
+            models.Booking.start_time > now,
+            models.Booking.status.in_([models.BookingStatus.PENDING, models.BookingStatus.CONFIRMED])
+        ).offset(skip).limit(limit).all()
+    
+    @staticmethod
+    async def get_upcoming_bookings(
+        db: Session, 
+        user_id: int, 
+        user_type: str,
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[models.Booking]:
+        """Get upcoming bookings for specific user"""
+        now = datetime.utcnow()
+        query = db.query(models.Booking).filter(
+            models.Booking.start_time > now,
+            models.Booking.status.in_([models.BookingStatus.PENDING, models.BookingStatus.CONFIRMED])
+        )
+        
+        if user_type == "student":
+            query = query.filter(models.Booking.student_id == user_id)
+        elif user_type == "tutor":
+            query = query.filter(models.Booking.tutor_id == user_id)
+        
+        return query.offset(skip).limit(limit).all()
+    
+    @staticmethod
+    async def get_booking_by_id(db: Session, booking_id: int) -> Optional[models.Booking]:
+        """Get booking by ID"""
+        return db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    
+    @staticmethod
+    async def create_booking(
+        db: Session, 
+        booking_data: schemas.BookingCreate
+    ) -> models.Booking:
+        """Create a new booking - delegates to enhanced service"""
+        return await EnhancedBookingService.create_booking_with_auto_calculations(
+            db, booking_data, auto_calculate=True
+        )
+    
+    @staticmethod
+    async def cancel_booking(db: Session, booking_id: int) -> Optional[models.Booking]:
+        """Cancel a booking - delegates to enhanced service"""
+        return await EnhancedBookingService.cancel_booking_with_auto_refund(
+            db, booking_id, auto_refund=True
+        )
+
+
 class EnhancedBookingService:
     """
     Service booking potenziato con calcoli automatici Excel-like
