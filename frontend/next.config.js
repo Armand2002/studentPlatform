@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  // Disabilita PWA in sviluppo per evitare errori GenerateSW multipli
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-})
+// Temporarily disable PWA completely
+// const withPWA = require('next-pwa')({
+//   dest: 'public',
+//   disable: true,
+//   register: false,
+//   skipWaiting: false,
+// })
 
 const nextConfig = {
 	reactStrictMode: true,
@@ -65,7 +65,23 @@ const nextConfig = {
 				]
 			}
 		]
+	},
+	// Add rewrites to potentially help with CORS issues during development
+	async rewrites() {
+		return [
+			{
+				source: '/api/:path*',
+				destination: 'http://localhost:8000/api/:path*',
+				has: [
+					{
+						type: 'header',
+						key: 'x-development-proxy'
+					}
+				]
+			}
+		]
 	}
 };
 
-module.exports = withPWA(nextConfig);
+// Export without PWA wrapper
+module.exports = nextConfig;

@@ -1,9 +1,10 @@
 """Admin routes for package assignments and payments"""
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
+from typing import List
 from app.core.database import get_db
 from app.auth.dependencies import get_current_user
-from app.users.models import UserRole
+from app.users.models import UserRole, User
 from app.admin import schemas, services, models
 from app.services.email_service import trigger_package_assigned
 
@@ -73,4 +74,11 @@ async def list_package_assignments(db: Session = Depends(get_db), admin_user=Dep
 async def list_payments(db: Session = Depends(get_db), admin_user=Depends(require_admin)):
 	payments = db.query(models.AdminPayment).all()
 	return payments
+
+
+@router.get("/users")
+async def list_users(db: Session = Depends(get_db), admin_user=Depends(require_admin)):
+	"""Get all users for admin dashboard"""
+	users = db.query(User).all()
+	return users
 

@@ -15,17 +15,20 @@ def create_admin_in_db():
     import os
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     
-    from app.core.database import engine
-    from sqlalchemy import text
+    from sqlalchemy import create_engine, text
     from app.core.security import get_password_hash
     
-    email = "test.admin@platform.com"
+    # Usa le credenziali corrette del Docker
+    DATABASE_URL = "postgresql://tutoring:password@localhost:5432/tutoring"
+    engine = create_engine(DATABASE_URL)
+    
+    email = "admin@acme.com"  # Usa l'email che preferisci
     password = "AdminPassword123!"
     
     try:
         with engine.connect() as conn:
             # Controlla se admin esiste
-            result = conn.execute(text("SELECT email FROM users WHERE role = 'admin' LIMIT 1"))
+            result = conn.execute(text("SELECT email FROM users WHERE email = :email LIMIT 1"), {"email": email})
             existing = result.fetchone()
             
             if existing:
@@ -233,8 +236,11 @@ def insert_test_booking_directly(student_id: int, tutor_id: int):
     import os
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     
-    from app.core.database import engine
-    from sqlalchemy import text
+    from sqlalchemy import create_engine, text
+    
+    # Usa le credenziali corrette del Docker
+    DATABASE_URL = "postgresql://tutoring:password@localhost:5432/tutoring"
+    engine = create_engine(DATABASE_URL)
     
     tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
     end_time = tomorrow + timedelta(hours=1)

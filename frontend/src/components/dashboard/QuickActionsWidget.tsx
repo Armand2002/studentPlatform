@@ -133,7 +133,7 @@ export default function QuickActionsWidget({ className }: QuickActionsWidgetProp
         console.log('🔍 Fetching recent activities and stats from backend...')
         
         // Chiama l'endpoint per ottenere le attività recenti
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('access_token')
         if (!token) {
           console.warn('⚠️ No token found, user not authenticated')
           setRecentActivities([])
