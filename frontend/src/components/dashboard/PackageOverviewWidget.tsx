@@ -13,9 +13,9 @@ import { packageService, UserPackageData } from '@/lib/api-services/packages'
 interface PackageData {
   id: string
   name: string
-  totalHours: number
-  remainingHours: number
-  expiryDate: string
+  totalHours: number | null
+  remainingHours: number | null
+  expiryDate: string | null
   subject: string
   isExpiringSoon: boolean
 }
@@ -46,9 +46,9 @@ export default function PackageOverviewWidget({ className }: PackageOverviewWidg
         const transformedPackages: PackageData[] = backendPackages.map((pkg: UserPackageData) => ({
           id: pkg.id || 'unknown',
           name: pkg.package?.name || pkg.customName || 'Pacchetto Sconosciuto',
-          totalHours: pkg.totalHours || 0,
-          remainingHours: pkg.remainingHours || 0,
-          expiryDate: pkg.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          totalHours: pkg.totalHours || null,
+          remainingHours: pkg.remainingHours || null,
+          expiryDate: pkg.expiryDate || null,
           subject: pkg.package?.subjects?.[0] || 'Generale',
           isExpiringSoon: pkg.isExpiringSoon || false
         }))
@@ -66,8 +66,8 @@ export default function PackageOverviewWidget({ className }: PackageOverviewWidg
     fetchPackages()
   }, [])
 
-  const totalRemainingHours = packages.reduce((sum, pkg) => sum + pkg.remainingHours, 0)
-  const totalPurchasedHours = packages.reduce((sum, pkg) => sum + pkg.totalHours, 0)
+  const totalRemainingHours = packages.reduce((sum, pkg) => sum + (pkg.remainingHours || 0), 0)
+  const totalPurchasedHours = packages.reduce((sum, pkg) => sum + (pkg.totalHours || 0), 0)
   const overallProgress = totalPurchasedHours > 0 ? ((totalPurchasedHours - totalRemainingHours) / totalPurchasedHours) * 100 : 0
 
   const getDaysUntilExpiry = (dateString: string) => {
@@ -146,8 +146,10 @@ export default function PackageOverviewWidget({ className }: PackageOverviewWidg
       {/* Packages List */}
       <div className="space-y-4">
         {packages.map((pkg) => {
-          const daysUntilExpiry = getDaysUntilExpiry(pkg.expiryDate)
-          const packageProgress = ((pkg.totalHours - pkg.remainingHours) / pkg.totalHours) * 100
+          const daysUntilExpiry = pkg.expiryDate ? getDaysUntilExpiry(pkg.expiryDate) : null
+          const packageProgress = pkg.totalHours && pkg.remainingHours !== null 
+            ? ((pkg.totalHours - pkg.remainingHours) / pkg.totalHours) * 100 
+            : 0
 
           return (
             <div 
@@ -192,15 +194,16 @@ export default function PackageOverviewWidget({ className }: PackageOverviewWidg
                 </div>
                 <div className={cn(
                   "flex items-center gap-1",
-                  daysUntilExpiry <= 7 ? "text-orange-500" : "text-foreground-muted"
+                  daysUntilExpiry !== null && daysUntilExpiry <= 7 ? "text-orange-500" : "text-foreground-muted"
                 )}>
-                  {daysUntilExpiry <= 7 ? (
+                  {daysUntilExpiry !== null && daysUntilExpiry <= 7 ? (
                     <ExclamationTriangleIcon className="h-3 w-3" />
                   ) : (
                     <CheckCircleIcon className="h-3 w-3" />
                   )}
                   <span>
                     {(() => {
+                      if (daysUntilExpiry === null) return 'Scadenza non disponibile'
                       if (daysUntilExpiry <= 0) return 'Scaduto'
                       if (daysUntilExpiry === 1) return 'Scade domani'
                       return `Scade tra ${daysUntilExpiry} giorni`

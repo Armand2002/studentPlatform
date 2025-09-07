@@ -93,7 +93,7 @@ export default function SettingsPage() {
         //   userService.getPrivacySettings()
         // ])
         
-        // Per ora impostiamo dati mock finché non implementiamo il backend
+        // TODO: Implementare API backend per profilo utente
         setProfile(null)
         
       } catch (err) {

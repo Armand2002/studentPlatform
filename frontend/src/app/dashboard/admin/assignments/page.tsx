@@ -96,9 +96,11 @@ export default function AssignmentsPage() {
         package: {
           id: assignment.package_id,
           name: assignment.package?.name || 'Pacchetto Standard',
-          totalHours: assignment.package?.total_hours || 10,
-          usedHours: assignment.used_hours || 0,
-          remainingHours: (assignment.package?.total_hours || 10) - (assignment.used_hours || 0)
+          totalHours: assignment.package?.total_hours ?? null,
+          usedHours: assignment.used_hours ?? null,
+          remainingHours: assignment.package?.total_hours && assignment.used_hours !== null 
+            ? assignment.package.total_hours - assignment.used_hours 
+            : null
         },
         status: assignment.status || 'active',
         createdAt: assignment.created_at,
@@ -114,39 +116,6 @@ export default function AssignmentsPage() {
     } catch (err) {
       console.error('Error fetching assignments:', err)
       setError('Impossibile caricare le assegnazioni')
-      
-      // Fallback data for demo
-      setAssignments([
-        {
-          id: 1,
-          student: {
-            id: 1,
-            firstName: 'Mario',
-            lastName: 'Rossi',
-            email: 'mario.rossi@email.com',
-            institute: 'Liceo Scientifico',
-            classLevel: '4° Anno'
-          },
-          tutor: {
-            id: 1,
-            firstName: 'Prof. Anna',
-            lastName: 'Bianchi',
-            email: 'anna.bianchi@email.com',
-            subjects: 'Matematica, Fisica'
-          },
-          package: {
-            id: 1,
-            name: 'Pacchetto Matematica - 10 ore',
-            totalHours: 10,
-            usedHours: 3,
-            remainingHours: 7
-          },
-          status: 'active',
-          createdAt: '2024-08-15T10:00:00Z',
-          assignedBy: 'admin@acme.com',
-          notes: 'Studente con difficoltà in trigonometria'
-        }
-      ])
     } finally {
       setLoading(false)
     }

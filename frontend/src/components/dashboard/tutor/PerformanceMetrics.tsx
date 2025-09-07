@@ -37,28 +37,28 @@ export function PerformanceMetrics() {
       
       // Estrai metriche dai dati reali del backend
       const tutorPerf = perfData.tutor_performance?.[0] || {};
-      const totalLessons = perfData.total_lessons_completed || 0;
+      const totalLessons = perfData.total_lessons_completed ?? 0;
       
       // SOLO DATI REALI - nessun calcolo artificiale
-      // Se non ci sono dati storici, mostriamo valori di default neutri
-      const calculatedRating = perfData.avg_rating || 0; // Solo rating reale
-      const calculatedResponseTime = perfData.avg_response_time || 0; // Solo tempo reale
-      const calculatedRetention = perfData.retention_rate || 0; // Solo retention reale
-      const calculatedSuccessRate = tutorPerf.completion_rate || 0; // Solo success rate reale
+      // Se non ci sono dati storici, mostriamo valori null
+      const calculatedRating = perfData.avg_rating ?? null; // Solo rating reale
+      const calculatedResponseTime = perfData.avg_response_time ?? null; // Solo tempo reale
+      const calculatedRetention = perfData.retention_rate ?? null; // Solo retention reale
+      const calculatedSuccessRate = tutorPerf.completion_rate ?? null; // Solo success rate reale
       
       // NESSUN GROWTH CALCULATO - solo 0% finché non implementiamo tracking storico
       const monthlyGrowthCalc = 0;
       
       setPerformance({
-        totalStudents: liveData.active_students_today || 0,
-        activeStudents: liveData.active_students_today || 0,
+        totalStudents: liveData.active_students_today ?? null,
+        activeStudents: liveData.active_students_today ?? null,
         totalLessons: totalLessons,
-        completedLessons: tutorPerf.lessons_completed || 0,
+        completedLessons: tutorPerf.lessons_completed ?? null,
         avgRating: calculatedRating,
         responseTime: calculatedResponseTime,
         successRate: calculatedSuccessRate,
         retentionRate: calculatedRetention,
-        weeklyHours: tutorPerf.hours_taught || 0,
+        weeklyHours: tutorPerf.hours_taught ?? null,
         monthlyGrowth: monthlyGrowthCalc
       });
     } catch (err) {

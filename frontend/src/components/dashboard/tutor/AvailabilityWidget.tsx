@@ -101,7 +101,7 @@ export default function AvailabilityWidget() {
             <input placeholder="Materie (es. Matematica)" value={subjects} onChange={(e)=> setSubjects(e.target.value)} className="h-8 rounded-md border border-gray-300 px-2 text-xs" />
           </div>
           <button
-            onClick={async ()=> { await createTutorProfileSelf({ first_name: firstName || 'Tutor', last_name: lastName || 'User', hourly_rate: hourlyRate || 20, subjects }); await load() }}
+            onClick={async ()=> { await createTutorProfileSelf({ first_name: firstName || 'Tutor', last_name: lastName || 'User', hourly_rate: hourlyRate ?? 20, subjects }); await load() }}
             className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs text-white hover:bg-primary-600"
           >Crea profilo tutor</button>
         </div>

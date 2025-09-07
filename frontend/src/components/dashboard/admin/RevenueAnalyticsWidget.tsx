@@ -15,16 +15,16 @@ import {
 import { api } from '@/lib/api';
 
 interface RevenueData {
-  today: number;
-  week: number;
-  month: number;
-  total: number;
-  avgPerLesson: number;
-  commission: number;
+  today: number | null;
+  week: number | null;
+  month: number | null;
+  total: number | null;
+  avgPerLesson: number | null;
+  commission: number | null;
   growth: {
-    daily: number;
-    weekly: number;
-    monthly: number;
+    daily: number | null;
+    weekly: number | null;
+    monthly: number | null;
   };
 }
 
@@ -32,7 +32,7 @@ interface RevenueMetricProps {
   label: string;
   value: string;
   icon: React.ElementType;
-  trend?: number;
+  trend?: number | null;
   color: string;
 }
 
@@ -48,7 +48,7 @@ function RevenueMetric({ label, value, icon: Icon, trend, color }: RevenueMetric
           <p className="font-semibold text-foreground">{value}</p>
         </div>
       </div>
-      {trend !== undefined && (
+      {trend !== null && trend !== undefined && (
         <div className="flex items-center">
           {trend > 0 ? (
             <TrendingUp className="w-4 h-4 text-green-500" />
@@ -69,19 +69,7 @@ function RevenueMetric({ label, value, icon: Icon, trend, color }: RevenueMetric
 export function RevenueAnalyticsWidget() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [revenueData, setRevenueData] = useState<RevenueData>({
-    today: 0,
-    week: 0,
-    month: 0,
-    total: 0,
-    avgPerLesson: 0,
-    commission: 0,
-    growth: {
-      daily: 0,
-      weekly: 0,
-      monthly: 0,
-    },
-  });
+  const [revenueData, setRevenueData] = useState<RevenueData | null>(null);
 
   const fetchRevenueData = async () => {
     try {
@@ -92,13 +80,13 @@ export function RevenueAnalyticsWidget() {
       const response = await api.get('/api/analytics/metrics');
       const data = response.data;
 
-      // Calcola i dati revenue
-      const monthRevenue = Math.round((data.revenue_cents_30d || 0) / 100);
-      const weekRevenue = Math.round(monthRevenue * 0.25); // Stima settimanale
-      const todayRevenue = Math.round(weekRevenue * 0.2); // Stima giornaliera
-      const totalRevenue = Math.round(monthRevenue * 6); // Stima totale
-      const avgPerLesson = Math.round(monthRevenue / Math.max(1, data.completed_24h * 30));
-      const platformCommission = Math.round(monthRevenue * 0.15); // 15% commissione
+      // Calcola i dati revenue solo dai dati API reali
+      const monthRevenue = data.revenue_cents_30d ? Math.round(data.revenue_cents_30d / 100) : null;
+      const weekRevenue = null; // To be calculated from historical data
+      const todayRevenue = null; // To be calculated from historical data
+      const totalRevenue = null; // To be calculated from historical data
+      const avgPerLesson = null; // To be calculated from lesson data
+      const platformCommission = monthRevenue ? Math.round(monthRevenue * 0.15) : null; // 15% commissione
 
       setRevenueData({
         today: todayRevenue,
@@ -108,29 +96,15 @@ export function RevenueAnalyticsWidget() {
         avgPerLesson,
         commission: platformCommission,
         growth: {
-          daily: 8,
-          weekly: 12,
-          monthly: 18,
+          daily: null,
+          weekly: null,
+          monthly: null,
         },
       });
     } catch (err) {
       console.error('Error fetching revenue data:', err);
       setError('Impossibile caricare i dati revenue');
-      
-      // Fallback con dati mock
-      setRevenueData({
-        today: 450,
-        week: 2800,
-        month: 15420,
-        total: 89500,
-        avgPerLesson: 35,
-        commission: 2313,
-        growth: {
-          daily: 8,
-          weekly: 12,
-          monthly: 18,
-        },
-      });
+      setRevenueData(null);
     } finally {
       setLoading(false);
     }
@@ -155,12 +129,12 @@ export function RevenueAnalyticsWidget() {
     );
   }
 
-  if (error) {
+  if (error || !revenueData) {
     return (
       <Card className="p-6">
         <div className="text-center text-red-600">
           <p className="font-medium">Errore revenue analytics</p>
-          <p className="text-sm mt-1">{error}</p>
+          <p className="text-sm mt-1">{error || 'Dati non disponibili'}</p>
           <button 
             onClick={fetchRevenueData}
             className="mt-3 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors"
@@ -175,40 +149,40 @@ export function RevenueAnalyticsWidget() {
   const revenueMetrics = [
     {
       label: 'Oggi',
-      value: `€${revenueData.today}`,
+      value: revenueData.today !== null ? `€${revenueData.today}` : 'N/A',
       icon: Calendar,
       trend: revenueData.growth.daily,
       color: 'bg-blue-500',
     },
     {
       label: 'Settimana',
-      value: `€${revenueData.week.toLocaleString()}`,
+      value: revenueData.week !== null ? `€${revenueData.week.toLocaleString()}` : 'N/A',
       icon: TrendingUp,
       trend: revenueData.growth.weekly,
       color: 'bg-green-500',
     },
     {
       label: 'Mese',
-      value: `€${revenueData.month.toLocaleString()}`,
+      value: revenueData.month !== null ? `€${revenueData.month.toLocaleString()}` : 'N/A',
       icon: Euro,
       trend: revenueData.growth.monthly,
       color: 'bg-emerald-500',
     },
     {
       label: 'Totale Platform',
-      value: `€${revenueData.total.toLocaleString()}`,
+      value: revenueData.total !== null ? `€${revenueData.total.toLocaleString()}` : 'N/A',
       icon: DollarSign,
       color: 'bg-purple-500',
     },
     {
       label: 'Media/Lezione',
-      value: `€${revenueData.avgPerLesson}`,
+      value: revenueData.avgPerLesson !== null ? `€${revenueData.avgPerLesson}` : 'N/A',
       icon: Target,
       color: 'bg-orange-500',
     },
     {
       label: 'Commissioni (15%)',
-      value: `€${revenueData.commission.toLocaleString()}`,
+      value: revenueData.commission !== null ? `€${revenueData.commission.toLocaleString()}` : 'N/A',
       icon: Percent,
       color: 'bg-indigo-500',
     },

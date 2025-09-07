@@ -19,7 +19,7 @@ import { api } from '@/lib/api';
 
 interface SystemStatus {
   status: 'online' | 'warning' | 'error';
-  uptime: string;
+  uptime: string | null;
   responseTime: number;
   lastCheck: string;
   details?: string;
@@ -32,14 +32,14 @@ interface SystemMetrics {
   storage: SystemStatus;
   performance: {
     avgResponseTime: number;
-    requestsPerMinute: number;
-    errorRate: number;
-    activeConnections: number;
+    requestsPerMinute: number | null;
+    errorRate: number | null;
+    activeConnections: number | null;
   };
   resources: {
-    cpu: number;
-    memory: number;
-    storage: number;
+    cpu: number | null;
+    memory: number | null;
+    storage: number | null;
   };
 }
 
@@ -87,7 +87,7 @@ function StatusItem({ label, status, icon: Icon }: StatusItemProps) {
           <div className="flex items-center gap-2 mt-1">
             {getStatusIcon(status.status)}
             <span className="text-xs text-foreground-secondary">
-              {status.responseTime}ms - {status.uptime}
+              {status.responseTime}ms - {status.uptime || 'Uptime N/A'}
             </span>
           </div>
         </div>
@@ -101,13 +101,27 @@ function StatusItem({ label, status, icon: Icon }: StatusItemProps) {
 
 interface MetricBarProps {
   readonly label: string;
-  readonly value: number;
+  readonly value: number | null;
   readonly max: number;
   readonly unit: string;
   readonly color: string;
 }
 
 function MetricBar({ label, value, max, unit, color }: MetricBarProps) {
+  if (value === null) {
+    return (
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-foreground-secondary">{label}</span>
+          <span className="text-sm font-medium text-gray-500">N/A</span>
+        </div>
+        <div className="w-full bg-background-secondary rounded-full h-2">
+          <div className="h-2 rounded-full bg-gray-500 opacity-50" style={{ width: '0%' }} />
+        </div>
+      </div>
+    );
+  }
+
   const percentage = Math.min((value / max) * 100, 100);
   
   return (
@@ -131,43 +145,7 @@ function MetricBar({ label, value, max, unit, color }: MetricBarProps) {
 export function SystemOverviewWidget() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [systemMetrics, setSystemMetrics] = useState<SystemMetrics>({
-    apiServer: {
-      status: 'online',
-      uptime: '99.9%',
-      responseTime: 0,
-      lastCheck: new Date().toISOString(),
-    },
-    database: {
-      status: 'online',
-      uptime: '99.8%',
-      responseTime: 0,
-      lastCheck: new Date().toISOString(),
-    },
-    authService: {
-      status: 'online',
-      uptime: '100%',
-      responseTime: 0,
-      lastCheck: new Date().toISOString(),
-    },
-    storage: {
-      status: 'online',
-      uptime: '99.9%',
-      responseTime: 0,
-      lastCheck: new Date().toISOString(),
-    },
-    performance: {
-      avgResponseTime: 0,
-      requestsPerMinute: 0,
-      errorRate: 0,
-      activeConnections: 0,
-    },
-    resources: {
-      cpu: 0,
-      memory: 0,
-      storage: 0,
-    },
-  });
+  const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
 
   const fetchSystemMetrics = async () => {
     try {
@@ -179,88 +157,48 @@ export function SystemOverviewWidget() {
       await api.get('/api/analytics/metrics');
       const responseTime = Date.now() - startTime;
 
-      // Mock system metrics (in production, questi verrebbero da API di monitoring)
+      // Real system metrics from monitoring APIs would go here
       setSystemMetrics({
         apiServer: {
           status: 'online',
-          uptime: '99.9%',
+          uptime: null, // To be retrieved from monitoring API
           responseTime,
           lastCheck: new Date().toISOString(),
         },
         database: {
           status: 'online',
-          uptime: '99.8%',
+          uptime: null, // To be retrieved from monitoring API
           responseTime: responseTime + 50,
           lastCheck: new Date().toISOString(),
         },
         authService: {
           status: 'online',
-          uptime: '100%',
+          uptime: null, // To be retrieved from monitoring API
           responseTime: responseTime - 20,
           lastCheck: new Date().toISOString(),
         },
         storage: {
           status: 'online',
-          uptime: '99.9%',
+          uptime: null, // To be retrieved from monitoring API
           responseTime: responseTime + 30,
           lastCheck: new Date().toISOString(),
         },
         performance: {
           avgResponseTime: responseTime,
-          requestsPerMinute: 145,
-          errorRate: 0.1,
-          activeConnections: 23,
+          requestsPerMinute: null, // To be retrieved from monitoring API
+          errorRate: null, // To be retrieved from monitoring API
+          activeConnections: null, // To be retrieved from monitoring API
         },
         resources: {
-          cpu: 35,
-          memory: 62,
-          storage: 45,
+          cpu: null, // To be retrieved from monitoring API
+          memory: null, // To be retrieved from monitoring API
+          storage: null, // To be retrieved from monitoring API
         },
       });
     } catch (err) {
       console.error('Error fetching system metrics:', err);
       setError('Impossibile caricare lo stato del sistema');
-      
-      // Fallback con dati mock
-      setSystemMetrics({
-        apiServer: {
-          status: 'error',
-          uptime: '0%',
-          responseTime: 0,
-          lastCheck: new Date().toISOString(),
-          details: 'API server non raggiungibile',
-        },
-        database: {
-          status: 'warning',
-          uptime: '95%',
-          responseTime: 1200,
-          lastCheck: new Date().toISOString(),
-          details: 'Prestazioni degradate',
-        },
-        authService: {
-          status: 'online',
-          uptime: '100%',
-          responseTime: 180,
-          lastCheck: new Date().toISOString(),
-        },
-        storage: {
-          status: 'online',
-          uptime: '99.9%',
-          responseTime: 120,
-          lastCheck: new Date().toISOString(),
-        },
-        performance: {
-          avgResponseTime: 450,
-          requestsPerMinute: 89,
-          errorRate: 2.3,
-          activeConnections: 15,
-        },
-        resources: {
-          cpu: 75,
-          memory: 88,
-          storage: 92,
-        },
-      });
+      setSystemMetrics(null);
     } finally {
       setLoading(false);
     }
@@ -288,6 +226,32 @@ export function SystemOverviewWidget() {
       </Card>
     );
   }
+
+  if (error || !systemMetrics) {
+    return (
+      <Card className="p-6">
+        <div className="text-center py-8">
+          <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+          <p className="text-foreground font-medium mb-2">
+            {error || 'Impossibile caricare lo stato del sistema'}
+          </p>
+          <button
+            onClick={fetchSystemMetrics}
+            className="text-primary hover:text-primary/80 text-sm"
+          >
+            Riprova
+          </button>
+        </div>
+      </Card>
+    );
+  }
+
+  const getResourceColor = (value: number | null): string => {
+    if (value === null) return 'bg-gray-500';
+    if (value > 80) return 'bg-red-500';
+    if (value > 60) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
 
   const systemServices = [
     {
@@ -318,24 +282,21 @@ export function SystemOverviewWidget() {
       value: systemMetrics.resources.cpu,
       max: 100,
       unit: '%',
-      color: systemMetrics.resources.cpu > 80 ? 'bg-red-500' : 
-             systemMetrics.resources.cpu > 60 ? 'bg-yellow-500' : 'bg-green-500',
+      color: getResourceColor(systemMetrics.resources.cpu),
     },
     {
       label: 'Memory',
       value: systemMetrics.resources.memory,
       max: 100,
       unit: '%',
-      color: systemMetrics.resources.memory > 80 ? 'bg-red-500' : 
-             systemMetrics.resources.memory > 60 ? 'bg-yellow-500' : 'bg-green-500',
+      color: getResourceColor(systemMetrics.resources.memory),
     },
     {
       label: 'Storage',
       value: systemMetrics.resources.storage,
       max: 100,
       unit: '%',
-      color: systemMetrics.resources.storage > 80 ? 'bg-red-500' : 
-             systemMetrics.resources.storage > 60 ? 'bg-yellow-500' : 'bg-green-500',
+      color: getResourceColor(systemMetrics.resources.storage),
     },
   ];
 
@@ -383,15 +344,21 @@ export function SystemOverviewWidget() {
           </div>
           <div>
             <span className="text-foreground-secondary">Req/min</span>
-            <p className="font-medium text-foreground">{systemMetrics.performance.requestsPerMinute}</p>
+            <p className="font-medium text-foreground">
+              {systemMetrics.performance.requestsPerMinute !== null ? systemMetrics.performance.requestsPerMinute : 'N/A'}
+            </p>
           </div>
           <div>
             <span className="text-foreground-secondary">Error Rate</span>
-            <p className="font-medium text-foreground">{systemMetrics.performance.errorRate}%</p>
+            <p className="font-medium text-foreground">
+              {systemMetrics.performance.errorRate !== null ? `${systemMetrics.performance.errorRate}%` : 'N/A'}
+            </p>
           </div>
           <div>
             <span className="text-foreground-secondary">Connections</span>
-            <p className="font-medium text-foreground">{systemMetrics.performance.activeConnections}</p>
+            <p className="font-medium text-foreground">
+              {systemMetrics.performance.activeConnections !== null ? systemMetrics.performance.activeConnections : 'N/A'}
+            </p>
           </div>
         </div>
       </div>

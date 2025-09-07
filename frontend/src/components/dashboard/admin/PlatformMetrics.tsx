@@ -15,21 +15,21 @@ import {
 import { api } from '@/lib/api';
 
 interface PlatformMetricsData {
-  totalUsers: number;
-  totalStudents: number;
-  totalTutors: number;
-  totalPackages: number;
-  activeLessons: number;
-  completedLessons24h: number;
-  totalRevenue30d: number;
-  platformGrowth: number;
+  totalUsers: number | null;
+  totalStudents: number | null;
+  totalTutors: number | null;
+  totalPackages: number | null;
+  activeLessons: number | null;
+  completedLessons24h: number | null;
+  totalRevenue30d: number | null;
+  platformGrowth: number | null;
 }
 
 interface MetricCardProps {
   title: string;
   value: string | number;
   icon: React.ElementType;
-  trend?: number;
+  trend?: number | null;
   color: string;
   description: string;
 }
@@ -47,7 +47,7 @@ function MetricCard({ title, value, icon: Icon, trend, color, description }: Met
           <Icon className="w-6 h-6 text-white" />
         </div>
       </div>
-      {trend !== undefined && (
+      {trend !== undefined && trend !== null && (
         <div className="mt-4 pt-4 border-t border-border">
           <div className="flex items-center">
             <TrendingUp className={`w-4 h-4 mr-1 ${trend > 0 ? 'text-green-500' : 'text-red-500'}`} />
@@ -65,16 +65,7 @@ function MetricCard({ title, value, icon: Icon, trend, color, description }: Met
 export function PlatformMetrics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [metrics, setMetrics] = useState<PlatformMetricsData>({
-    totalUsers: 0,
-    totalStudents: 0,
-    totalTutors: 0,
-    totalPackages: 0,
-    activeLessons: 0,
-    completedLessons24h: 0,
-    totalRevenue30d: 0,
-    platformGrowth: 0,
-  });
+  const [metrics, setMetrics] = useState<PlatformMetricsData | null>(null);
 
   const fetchMetrics = async () => {
     try {
@@ -91,30 +82,19 @@ export function PlatformMetrics() {
       const usersData = usersRes.data;
 
       setMetrics({
-        totalUsers: usersData.length || 0,
-        totalStudents: analyticsData.students || 0,
-        totalTutors: analyticsData.tutors || 0,
-        totalPackages: analyticsData.packages || 0,
-        activeLessons: analyticsData.bookings || 0,
-        completedLessons24h: analyticsData.completed_24h || 0,
-        totalRevenue30d: Math.round((analyticsData.revenue_cents_30d || 0) / 100),
-        platformGrowth: 12, // Mock per ora
+        totalUsers: usersData.length || null,
+        totalStudents: analyticsData.students || null,
+        totalTutors: analyticsData.tutors || null,
+        totalPackages: analyticsData.packages || null,
+        activeLessons: analyticsData.bookings || null,
+        completedLessons24h: analyticsData.completed_24h || null,
+        totalRevenue30d: analyticsData.revenue_cents_30d ? Math.round(analyticsData.revenue_cents_30d / 100) : null,
+        platformGrowth: analyticsData.growth_percentage || null,
       });
     } catch (err) {
       console.error('Error fetching platform metrics:', err);
       setError('Impossibile caricare le metriche della piattaforma');
-      
-      // Fallback con dati mock
-      setMetrics({
-        totalUsers: 175,
-        totalStudents: 150,
-        totalTutors: 25,
-        totalPackages: 42,
-        activeLessons: 18,
-        completedLessons24h: 8,
-        totalRevenue30d: 15420,
-        platformGrowth: 12,
-      });
+      setMetrics(null);
     } finally {
       setLoading(false);
     }
@@ -140,12 +120,12 @@ export function PlatformMetrics() {
     );
   }
 
-  if (error) {
+  if (error || !metrics) {
     return (
       <Card className="p-6">
         <div className="text-center text-red-600">
           <p className="font-medium">Errore nel caricamento delle metriche</p>
-          <p className="text-sm mt-1">{error}</p>
+          <p className="text-sm mt-1">{error || 'Dati non disponibili'}</p>
           <button 
             onClick={fetchMetrics}
             className="mt-3 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors"
@@ -160,7 +140,7 @@ export function PlatformMetrics() {
   const metricCards = [
     {
       title: 'Utenti Totali',
-      value: metrics.totalUsers,
+      value: metrics.totalUsers ?? 'N/A',
       icon: Users,
       trend: metrics.platformGrowth,
       color: 'bg-blue-500',
@@ -168,53 +148,53 @@ export function PlatformMetrics() {
     },
     {
       title: 'Studenti Attivi',
-      value: metrics.totalStudents,
+      value: metrics.totalStudents ?? 'N/A',
       icon: GraduationCap,
-      trend: 8,
+      trend: null,
       color: 'bg-green-500',
       description: 'Con pacchetti attivi'
     },
     {
       title: 'Tutors Verificati',
-      value: metrics.totalTutors,
+      value: metrics.totalTutors ?? 'N/A',
       icon: Users,
-      trend: 15,
+      trend: null,
       color: 'bg-purple-500',
       description: 'Tutors approvati e attivi'
     },
     {
       title: 'Pacchetti Venduti',
-      value: metrics.totalPackages,
+      value: metrics.totalPackages ?? 'N/A',
       icon: BookOpen,
-      trend: 22,
+      trend: null,
       color: 'bg-orange-500',
       description: 'Totale pacchetti attivi'
     },
     {
       title: 'Lezioni Attive',
-      value: metrics.activeLessons,
+      value: metrics.activeLessons ?? 'N/A',
       icon: Clock,
       color: 'bg-teal-500',
       description: 'Lezioni programmate oggi'
     },
     {
       title: 'Completate (24h)',
-      value: metrics.completedLessons24h,
+      value: metrics.completedLessons24h ?? 'N/A',
       icon: CheckCircle,
       color: 'bg-green-600',
       description: 'Lezioni completate oggi'
     },
     {
       title: 'Revenue (30g)',
-      value: `€${metrics.totalRevenue30d.toLocaleString()}`,
+      value: metrics.totalRevenue30d !== null ? `€${metrics.totalRevenue30d.toLocaleString()}` : 'N/A',
       icon: Euro,
-      trend: 18,
+      trend: null,
       color: 'bg-emerald-500',
       description: 'Fatturato ultimo mese'
     },
     {
       title: 'Crescita Platform',
-      value: `+${metrics.platformGrowth}%`,
+      value: metrics.platformGrowth !== null ? `+${metrics.platformGrowth}%` : 'N/A',
       icon: BarChart3,
       color: 'bg-indigo-500',
       description: 'Crescita mensile utenti'

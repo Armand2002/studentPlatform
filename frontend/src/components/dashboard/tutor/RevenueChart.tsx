@@ -57,8 +57,8 @@ export function RevenueChart() {
         const tutorPerformanceArray = tutorData.tutor_performance || [];
         
         // Usa i dati reali se disponibili, altrimenti array vuoto
-        const revenueArray = tutorPerformanceArray.map((t: any) => t.revenue_generated || 0);
-        const lessonsArray = tutorPerformanceArray.map((t: any) => t.lessons_completed || 0);
+        const revenueArray = tutorPerformanceArray.map((t: any) => t.revenue_generated ?? 0);
+        const lessonsArray = tutorPerformanceArray.map((t: any) => t.lessons_completed ?? 0);
         
         setRevenueData({
           labels: weekLabels,
@@ -70,8 +70,8 @@ export function RevenueChart() {
       } else {
         // Per monthly, distribuire il totale revenue su 6 mesi simulati
         const monthLabels = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu'];
-        const totalRevenue = tutorData.total_revenue_generated || 0;
-        const totalLessons = tutorData.total_lessons_completed || 0;
+        const totalRevenue = tutorData.total_revenue_generated ?? 0;
+        const totalLessons = tutorData.total_lessons_completed ?? 0;
         
         // Distribuzione realistica: ultimo mese ha più attività
         const monthlyRevenue = [

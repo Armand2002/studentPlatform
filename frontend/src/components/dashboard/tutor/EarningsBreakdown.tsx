@@ -5,14 +5,14 @@ import { Card } from '@/components/ui/Card';
 import { api } from '@/lib/api';
 
 interface EarningsData {
-  todayEarnings: number;
-  weeklyEarnings: number;
-  monthlyEarnings: number;
-  totalEarnings: number;
-  weeklyGrowth: number;
-  monthlyGrowth: number;
-  avgPerLesson: number;
-  totalLessons: number;
+  todayEarnings: number | null;
+  weeklyEarnings: number | null;
+  monthlyEarnings: number | null;
+  totalEarnings: number | null;
+  weeklyGrowth: number | null;
+  monthlyGrowth: number | null;
+  avgPerLesson: number | null;
+  totalLessons: number | null;
 }
 
 export function EarningsBreakdown() {
@@ -33,23 +33,18 @@ export function EarningsBreakdown() {
       const todayData = todayResponse.data;
       const perfData = performanceResponse.data;
       
-      // Calcola totali da dati reali
-      const totalRevenue = perfData.total_revenue_generated || 0;
-      const totalLessons = perfData.total_lessons_completed || 0;
-      
-      // NESSUN CALCOLO DI GROWTH - usiamo solo dati reali
-      // Growth sarà 0% finché non implementiamo tracking storico nel backend
-      const weeklyGrowthCalc = 0;
-      const monthlyGrowthCalc = 0;
+      // Calcola totali da dati reali - nessun fallback mock
+      const totalRevenue = perfData.total_revenue_generated || null;
+      const totalLessons = perfData.total_lessons_completed || null;
       
       setEarnings({
-        todayEarnings: todayData.tutor_earnings_today || 0,
-        weeklyEarnings: totalRevenue * 0.7, // 70% tutor share stimato
+        todayEarnings: todayData.tutor_earnings_today || null,
+        weeklyEarnings: totalRevenue !== null ? totalRevenue * 0.7 : null, // 70% tutor share stimato
         monthlyEarnings: totalRevenue, // Assume current month
         totalEarnings: totalRevenue,
-        weeklyGrowth: 0, // NESSUN GROWTH MOCK - solo 0%
-        monthlyGrowth: 0, // NESSUN GROWTH MOCK - solo 0%
-        avgPerLesson: totalLessons > 0 ? totalRevenue / totalLessons : 0,
+        weeklyGrowth: null, // To be calculated from historical data
+        monthlyGrowth: null, // To be calculated from historical data
+        avgPerLesson: totalLessons !== null && totalLessons > 0 && totalRevenue !== null ? totalRevenue / totalLessons : null,
         totalLessons: totalLessons
       });
     } catch (err) {
@@ -97,7 +92,10 @@ export function EarningsBreakdown() {
   }
 
   const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
-  const formatPercentage = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+  const formatPercentage = (value: number | null) => {
+    if (value === null) return 'N/A';
+    return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+  };
 
   return (
     <Card className="p-6">
@@ -120,7 +118,7 @@ export function EarningsBreakdown() {
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-primary">
-              {formatCurrency(earnings.todayEarnings)}
+              {earnings.todayEarnings !== null ? formatCurrency(earnings.todayEarnings) : 'N/A'}
             </div>
           </div>
         </div>
@@ -136,9 +134,12 @@ export function EarningsBreakdown() {
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-green-500">
-              {formatCurrency(earnings.weeklyEarnings)}
+              {earnings.weeklyEarnings !== null ? formatCurrency(earnings.weeklyEarnings) : 'N/A'}
             </div>
-            <div className={`text-xs ${earnings.weeklyGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`text-xs ${
+              earnings.weeklyGrowth === null ? 'text-gray-500' : 
+              earnings.weeklyGrowth >= 0 ? 'text-green-500' : 'text-red-500'
+            }`}>
               {formatPercentage(earnings.weeklyGrowth)}
             </div>
           </div>
@@ -155,9 +156,12 @@ export function EarningsBreakdown() {
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-blue-500">
-              {formatCurrency(earnings.monthlyEarnings)}
+              {earnings.monthlyEarnings !== null ? formatCurrency(earnings.monthlyEarnings) : 'N/A'}
             </div>
-            <div className={`text-xs ${earnings.monthlyGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`text-xs ${
+              earnings.monthlyGrowth === null ? 'text-gray-500' : 
+              earnings.monthlyGrowth >= 0 ? 'text-green-500' : 'text-red-500'
+            }`}>
               {formatPercentage(earnings.monthlyGrowth)}
             </div>
           </div>
@@ -174,7 +178,7 @@ export function EarningsBreakdown() {
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-purple-500">
-              {formatCurrency(earnings.totalEarnings)}
+              {earnings.totalEarnings !== null ? formatCurrency(earnings.totalEarnings) : 'N/A'}
             </div>
           </div>
         </div>
@@ -185,7 +189,7 @@ export function EarningsBreakdown() {
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center p-3 bg-background-secondary rounded-lg">
             <div className="text-lg font-bold text-orange-500">
-              {formatCurrency(earnings.avgPerLesson)}
+              {earnings.avgPerLesson !== null ? formatCurrency(earnings.avgPerLesson) : 'N/A'}
             </div>
             <div className="text-xs text-foreground-secondary">Media/Lezione</div>
           </div>

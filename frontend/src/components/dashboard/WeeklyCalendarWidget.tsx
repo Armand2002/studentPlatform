@@ -150,7 +150,7 @@ export default function WeeklyCalendarWidget() {
       const end0 = new Date(selectedSlot.end_time)
       const durationHours0 = Math.max(1, Math.round((end0.getTime() - start0.getTime()) / (1000 * 60 * 60)))
       let ok = 0
-      const total = recurrenceWeeks || 1
+      const total = recurrenceWeeks ?? 1
       for (let k = 0; k < total; k += 1) {
         const start = new Date(start0)
         const end = new Date(end0)

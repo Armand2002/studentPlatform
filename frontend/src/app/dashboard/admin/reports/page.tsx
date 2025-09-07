@@ -48,74 +48,41 @@ export default function ReportsPage() {
   const [dateRange, setDateRange] = useState('last_30_days');
   const [reportType, setReportType] = useState('overview');
 
-  const fetchReportData = async () => {
+  // Helper function per convertire dateRange in giorni
+  const getDaysFromRange = (range: string): number => {
+    switch (range) {
+      case 'today': return 1;
+      case 'week': return 7;
+      case 'month': return 30;
+      case 'quarter': return 90;
+      case 'year': return 365;
+      default: return 30;
+    }
+  };
+
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch data parallelo da diverse API
-      const [analyticsRes, usersRes, paymentsRes, bookingsRes] = await Promise.all([
-        api.get('/api/analytics/metrics'),
-        api.get('/api/admin/users'),
-        api.get('/api/admin/payments'),
-        api.get('/api/bookings/'),
-      ]);
+      // Fetch solo i dati necessari dalla nuova API reports
+      const reportsRes = await api.get(`/api/admin/reports/overview?days=${getDaysFromRange(dateRange)}`);
+      const reports = reportsRes.data;
 
-      const analytics = analyticsRes.data;
-      const users = usersRes.data;
-      const payments = paymentsRes.data;
-      const bookings = bookingsRes.data;
-
-      // Calcola statistiche
-      const totalRevenue = payments.reduce((sum: number, payment: any) => 
-        sum + (payment.amount_cents || 0), 0) / 100;
-      
-      const completedBookings = bookings.filter((b: any) => b.status === 'COMPLETED');
-      const completionRate = bookings.length > 0 ? 
-        (completedBookings.length / bookings.length) * 100 : 0;
-
-      // Top tutors (simulato basato su dati reali)
-      const tutors = users.filter((u: any) => u.role === 'tutor');
-      const topTutors = tutors.slice(0, 5).map((tutor: any, index: number) => ({
-        id: tutor.id,
-        name: tutor.email.split('@')[0],
-        totalEarnings: Math.floor(Math.random() * 2000) + 500,
-        totalLessons: Math.floor(Math.random() * 50) + 10,
-        rating: 4.2 + Math.random() * 0.8,
-      }));
-
-      // Revenue by month (ultimi 6 mesi)
-      const revenueByMonth = Array.from({ length: 6 }, (_, i) => {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        return {
-          month: date.toLocaleDateString('it-IT', { month: 'short', year: '2-digit' }),
-          revenue: Math.floor(Math.random() * 5000) + 1000,
-          bookings: Math.floor(Math.random() * 50) + 10,
-        };
-      }).reverse();
-
-      // User growth (ultimi 6 mesi)
-      const userGrowth = Array.from({ length: 6 }, (_, i) => {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        return {
-          month: date.toLocaleDateString('it-IT', { month: 'short', year: '2-digit' }),
-          students: Math.floor(Math.random() * 20) + 5,
-          tutors: Math.floor(Math.random() * 5) + 1,
-        };
-      }).reverse();
+      // Usa i dati reali dalla nuova API reports
+      const totalRevenue = reports.total_revenue_cents / 100;
+      const completionRate = reports.completion_rate;
 
       setReportData({
         period: dateRange,
         totalRevenue,
-        totalBookings: bookings.length,
-        activeUsers: users.filter((u: any) => u.is_active).length,
+        totalBookings: reports.total_bookings,
+        activeUsers: reports.active_users,
         completionRate,
-        avgSessionDuration: 45, // minutes, potrebbe venire da bookings
-        topTutors,
-        revenueByMonth,
-        userGrowth,
+        avgSessionDuration: reports.average_session_duration ?? null,
+        topTutors: reports.top_tutors || [],
+        revenueByMonth: reports.monthly_revenue || [],
+        userGrowth: reports.user_growth || [],
       });
 
     } catch (err) {
@@ -148,7 +115,7 @@ export default function ReportsPage() {
   };
 
   useEffect(() => {
-    fetchReportData();
+    fetchData();
   }, [dateRange, reportType]);
 
   if (loading) {
@@ -180,7 +147,7 @@ export default function ReportsPage() {
             <p className="font-medium">Errore nel caricamento dei report</p>
             <p className="text-sm mt-1">{error}</p>
             <button 
-              onClick={fetchReportData}
+              onClick={fetchData}
               className="mt-3 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors"
             >
               Riprova
@@ -218,7 +185,7 @@ export default function ReportsPage() {
             Esporta CSV
           </button>
           <button
-            onClick={fetchReportData}
+            onClick={fetchData}
             className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-background-secondary transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
@@ -366,11 +333,11 @@ export default function ReportsPage() {
                       <div className="w-16 h-2 bg-background-secondary rounded-full">
                         <div 
                           className="h-full bg-green-500 rounded-full"
-                          style={{ width: `${(tutor.totalEarnings / 2500) * 100}%` }}
+                          style={{ width: `${Math.min((tutor.totalEarnings / Math.max(...reportData.topTutors.map((t: any) => t.totalEarnings))) * 100, 100)}%` }}
                         />
                       </div>
                       <span className="text-xs text-foreground-secondary">
-                        {Math.floor((tutor.totalEarnings / 2500) * 100)}%
+                        Relativo
                       </span>
                     </div>
                   </td>

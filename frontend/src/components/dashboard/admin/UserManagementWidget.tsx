@@ -155,44 +155,7 @@ export function UserManagementWidget() {
     } catch (err) {
       console.error('Error fetching users:', err);
       setError('Impossibile caricare gli utenti');
-      
-      // Fallback con dati mock
-      setUsers([
-        {
-          id: 1,
-          firstName: 'Marco',
-          lastName: 'Rossi',
-          email: 'marco.rossi@email.com',
-          role: 'tutor',
-          status: 'verified',
-          registrationDate: '2024-08-15',
-          lastActivity: '2024-09-04',
-          totalLessons: 45,
-          totalEarnings: 1580,
-        },
-        {
-          id: 2,
-          firstName: 'Anna',
-          lastName: 'Bianchi',
-          email: 'anna.bianchi@email.com',
-          role: 'student',
-          status: 'active',
-          registrationDate: '2024-08-20',
-          lastActivity: '2024-09-03',
-          totalLessons: 12,
-        },
-        {
-          id: 3,
-          firstName: 'Luigi',
-          lastName: 'Verdi',
-          email: 'luigi.verdi@email.com',
-          role: 'tutor',
-          status: 'pending',
-          registrationDate: '2024-09-01',
-          lastActivity: '2024-09-02',
-          totalLessons: 0,
-        },
-      ]);
+      setUsers([]);
     } finally {
       setLoading(false);
     }

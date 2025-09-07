@@ -25,7 +25,7 @@ export default function AdminMetricsWidget() {
       setStudents(m.students)
       setPackages(m.packages)
       setCompleted24h(m.completed_24h)
-      setRevenue30d(Math.round((m.revenue_cents_30d || 0) / 100))
+      setRevenue30d(Math.round((m.revenue_cents_30d ?? 0) / 100))
     } catch {
       setError('Impossibile caricare le metriche')
     } finally { setLoading(false) }

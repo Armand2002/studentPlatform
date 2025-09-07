@@ -69,23 +69,26 @@ export default function SettingsPage() {
       setLoading(true);
       setError(null);
       
-      // In un'applicazione reale, queste verrebbero dalle API del backend
-      // Per ora simuliamo con dati locali
+      // Usa la nuova API admin/settings
+      const response = await api.get('/api/admin/settings');
+      const backendSettings = response.data;
+      
+      // Mappa i dati dal backend alla struttura frontend
       setSettings({
-        siteName: 'Tutoring Platform',
-        siteDescription: 'Piattaforma di tutoring online per studenti e tutor',
-        supportEmail: 'support@tutoringplatform.com',
-        maintenanceMode: false,
-        registrationEnabled: true,
-        emailNotifications: true,
-        maxFileSize: 10,
-        sessionTimeout: 30,
-        backupEnabled: true,
-        backupFrequency: 'daily',
-        stripePublicKey: 'pk_test_...',
-        stripeSecretKey: 'sk_test_...',
-        sendgridApiKey: 'SG...',
-        databaseUrl: 'postgresql://user:pass@localhost:5432/db',
+        siteName: backendSettings.site_name || 'Tutoring Platform',
+        siteDescription: backendSettings.site_description || 'Piattaforma di tutoring online per studenti e tutor',
+        supportEmail: backendSettings.support_email || 'support@tutoringplatform.com',
+        maintenanceMode: backendSettings.maintenance_mode || false,
+        registrationEnabled: backendSettings.registration_enabled || true,
+        emailNotifications: backendSettings.email_notifications || true,
+        maxFileSize: backendSettings.max_file_size ?? 10,
+        sessionTimeout: backendSettings.session_timeout ?? 30,
+        backupEnabled: backendSettings.backup_enabled || true,
+        backupFrequency: backendSettings.backup_frequency || 'daily',
+        stripePublicKey: backendSettings.stripe_public_key || '',
+        stripeSecretKey: backendSettings.stripe_secret_key || '',
+        sendgridApiKey: backendSettings.sendgrid_api_key || '',
+        databaseUrl: backendSettings.database_url || '',
       });
       
     } catch (err) {
@@ -102,11 +105,25 @@ export default function SettingsPage() {
       setError(null);
       setSuccess(null);
 
-      // Qui faresti una PUT/POST request alle API del backend
-      // await api.put('/api/admin/settings', settings);
+      // Mappa i dati frontend alla struttura backend
+      const backendSettings = {
+        site_name: settings.siteName,
+        site_description: settings.siteDescription,
+        support_email: settings.supportEmail,
+        maintenance_mode: settings.maintenanceMode,
+        registration_enabled: settings.registrationEnabled,
+        email_notifications: settings.emailNotifications,
+        max_file_size: settings.maxFileSize,
+        session_timeout: settings.sessionTimeout,
+        backup_enabled: settings.backupEnabled,
+        backup_frequency: settings.backupFrequency,
+        stripe_public_key: settings.stripePublicKey,
+        stripe_secret_key: settings.stripeSecretKey,
+        sendgrid_api_key: settings.sendgridApiKey,
+        database_url: settings.databaseUrl,
+      };
       
-      // Simuliamo il salvataggio
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await api.put('/api/admin/settings', backendSettings);
       
       setSuccess('Impostazioni salvate con successo');
       setTimeout(() => setSuccess(null), 3000);
@@ -122,10 +139,11 @@ export default function SettingsPage() {
   const testEmailSettings = async () => {
     try {
       setError(null);
-      // await api.post('/api/admin/test-email');
+      await api.post('/api/admin/test-email');
       setSuccess('Email di test inviata con successo');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
+      console.error('Error testing email:', err);
       setError('Errore nell\'invio dell\'email di test');
     }
   };
@@ -133,10 +151,11 @@ export default function SettingsPage() {
   const createBackup = async () => {
     try {
       setError(null);
-      // await api.post('/api/admin/create-backup');
+      await api.post('/api/admin/create-backup');
       setSuccess('Backup creato con successo');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
+      console.error('Error creating backup:', err);
       setError('Errore nella creazione del backup');
     }
   };

@@ -406,7 +406,9 @@ export default function DeadlinesPage({ className }: DeadlinesPageProps) {
                           deadline.status === 'overdue' ? "text-red-500" : "text-foreground-muted"
                         )}>
                           <ClockIcon className="h-4 w-4" />
-                          {formatTimeRemaining(deadline.hoursRemaining || 0)}
+                          {deadline.hoursRemaining !== null && deadline.hoursRemaining !== undefined 
+                            ? formatTimeRemaining(deadline.hoursRemaining)
+                            : 'N/A'}
                         </span>
                         
                         <span className="text-foreground-muted">

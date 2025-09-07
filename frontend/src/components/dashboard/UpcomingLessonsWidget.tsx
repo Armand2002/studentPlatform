@@ -82,7 +82,7 @@ export default function UpcomingLessonsWidget({ className }: UpcomingLessonsWidg
               tutorName: `${booking.tutor?.first_name || 'Nome'} ${booking.tutor?.last_name || 'Cognome'}`,
               date: booking.slot_date,
               time: booking.start_time,
-              duration: booking.duration || 60,
+              duration: booking.duration ?? 60,
               location: booking.location || 'Online',
               status: booking.status === 'confirmed' ? 'confirmed' : 'pending',
               isToday: lessonDate.toDateString() === today.toDateString(),

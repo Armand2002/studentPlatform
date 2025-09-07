@@ -108,7 +108,7 @@ export default function PaymentStatusWidget({ className }: PaymentStatusWidgetPr
 
           return {
             id: payment.id.toString(),
-            amount: payment.amount || 0,
+            amount: payment.amount ?? null,
             description: payment.description || `Pagamento per ${payment.package_name || 'servizio'}`,
             status: payment.status || 'pending',
             date: payment.created_at || payment.date,

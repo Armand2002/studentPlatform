@@ -133,14 +133,14 @@ export default function LessonHistoryPage({ className }: LessonHistoryPageProps)
           date: booking.slot_date,
           startTime: booking.start_time,
           endTime: booking.end_time,
-          duration: booking.duration || 60,
+          duration: booking.duration ?? 60,
           location: booking.location || 'Online',
           status: booking.status === 'confirmed' ? 'completed' : 
                   booking.status === 'cancelled' ? 'cancelled' : 'completed',
-          rating: booking.rating || (booking.status === 'completed' ? 4 + (booking.id % 2) : undefined),
-          notes: booking.notes || 'Lezione completata con successo',
+          rating: booking.rating || null,
+          notes: booking.notes || null,
           materials: booking.materials || [],
-          price: booking.price || 45.00,
+          price: booking.price ?? null,
           packageUsed: booking.package_name || 'Pacchetto Standard',
           topics: booking.topics || [booking.subject || 'Argomenti generali'],
           difficulty: booking.difficulty || (['beginner', 'intermediate', 'advanced'][booking.id % 3] as any),
@@ -216,7 +216,7 @@ export default function LessonHistoryPage({ className }: LessonHistoryPageProps)
           comparison = a.tutorName.localeCompare(b.tutorName)
           break
         case 'rating':
-          comparison = (a.rating || 0) - (b.rating || 0)
+          comparison = (a.rating ?? 0) - (b.rating ?? 0)
           break
       }
       
@@ -229,8 +229,8 @@ export default function LessonHistoryPage({ className }: LessonHistoryPageProps)
     const completed = lessons.filter(l => l.status === 'completed').length
     const total = lessons.length
     const totalHours = lessons.filter(l => l.status === 'completed').reduce((sum, l) => sum + l.duration, 0)
-    const totalSpent = lessons.filter(l => l.status === 'completed').reduce((sum, l) => sum + l.price, 0)
-    const avgRating = lessons.filter(l => l.rating).reduce((sum, l) => sum + (l.rating || 0), 0) / lessons.filter(l => l.rating).length
+    const totalSpent = lessons.filter(l => l.status === 'completed').reduce((sum, l) => sum + (l.price ?? 0), 0)
+    const avgRating = lessons.filter(l => l.rating).reduce((sum, l) => sum + (l.rating ?? 0), 0) / lessons.filter(l => l.rating).length
     
     return {
       completed,
@@ -238,7 +238,7 @@ export default function LessonHistoryPage({ className }: LessonHistoryPageProps)
       completionRate: total > 0 ? (completed / total) * 100 : 0,
       totalHours: totalHours / 60, // Converti in ore
       totalSpent,
-      avgRating: avgRating || 0
+      avgRating: avgRating || null
     }
   }, [lessons])
 
@@ -317,7 +317,9 @@ export default function LessonHistoryPage({ className }: LessonHistoryPageProps)
           <div className="text-xs text-foreground-muted">Ore Totali</div>
         </div>
         <div className="text-center p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
-          <div className="text-2xl font-bold text-yellow-500">{stats.avgRating.toFixed(1)}</div>
+          <div className="text-2xl font-bold text-yellow-500">
+            {stats.avgRating !== null ? stats.avgRating.toFixed(1) : 'N/A'}
+          </div>
           <div className="text-xs text-foreground-muted">Rating Medio</div>
         </div>
       </div>

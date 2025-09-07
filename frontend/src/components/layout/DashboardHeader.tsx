@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { Menu, Transition } from '@headlessui/react'
 import { 
   Bars3Icon,
-  BellIcon,
   ChevronDownIcon,
   UserCircleIcon,
   Cog6ToothIcon,
@@ -13,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
+import { NotificationBell } from '@/components/notifications/NotificationSystem'
 
 interface DashboardHeaderProps {
   onMenuClick: () => void
@@ -155,13 +155,7 @@ export default function DashboardHeader({ onMenuClick, user }: DashboardHeaderPr
         {/* Right side */}
         <div className="flex items-center gap-x-4 lg:gap-x-6 ml-auto">
           {/* Notifications */}
-          <button
-            type="button"
-            className="-m-2.5 p-2.5 text-foreground-muted hover:text-foreground transition-colors"
-          >
-            <span className="sr-only">Visualizza notifiche</span>
-            <BellIcon className="h-6 w-6" aria-hidden="true" />
-          </button>
+          <NotificationBell />
 
           {/* Separator */}
           <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-border" aria-hidden="true" />

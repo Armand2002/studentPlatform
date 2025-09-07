@@ -46,13 +46,7 @@ export function AdminAnalyticsChart() {
   const [error, setError] = useState<string | null>(null);
   const [chartType, setChartType] = useState<ChartType>('line');
   const [timeFrame, setTimeFrame] = useState<TimeFrame>('weekly');
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
-    labels: [],
-    users: [],
-    lessons: [],
-    revenue: [],
-    packages: [],
-  });
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
 
   const fetchAnalytics = async () => {
     try {
@@ -73,36 +67,25 @@ export function AdminAnalyticsChart() {
         const weekLabels = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         setAnalyticsData({
           labels: weekLabels,
-          users: data.users || [12, 15, 18, 22, 25, 20, 24],
-          lessons: data.completed || [8, 12, 15, 18, 22, 16, 20],
-          revenue: data.revenue || [450, 680, 820, 950, 1200, 980, 1150],
-          packages: data.packages || [2, 3, 1, 4, 5, 2, 3],
+          users: data.users || [],
+          lessons: data.completed || [],
+          revenue: data.revenue || [],
+          packages: data.packages || [],
         });
       } else {
         const monthLabels = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu'];
         setAnalyticsData({
           labels: monthLabels,
-          users: data.users || [120, 145, 168, 192, 215, 238],
-          lessons: data.completed || [280, 320, 365, 410, 456, 498],
-          revenue: data.revenue || [8500, 9200, 10100, 11500, 12800, 14200],
-          packages: data.packages || [25, 28, 32, 35, 38, 42],
+          users: data.users || [],
+          lessons: data.completed || [],
+          revenue: data.revenue || [],
+          packages: data.packages || [],
         });
       }
     } catch (err) {
       console.error('Error fetching analytics:', err);
       setError('Impossibile caricare i dati analytics');
-      
-      // Fallback con dati mock
-      const weekLabels = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-      const monthLabels = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu'];
-      
-      setAnalyticsData({
-        labels: timeFrame === 'weekly' ? weekLabels : monthLabels,
-        users: timeFrame === 'weekly' ? [12, 15, 18, 22, 25, 20, 24] : [120, 145, 168, 192, 215, 238],
-        lessons: timeFrame === 'weekly' ? [8, 12, 15, 18, 22, 16, 20] : [280, 320, 365, 410, 456, 498],
-        revenue: timeFrame === 'weekly' ? [450, 680, 820, 950, 1200, 980, 1150] : [8500, 9200, 10100, 11500, 12800, 14200],
-        packages: timeFrame === 'weekly' ? [2, 3, 1, 4, 5, 2, 3] : [25, 28, 32, 35, 38, 42],
-      });
+      setAnalyticsData(null);
     } finally {
       setLoading(false);
     }
@@ -123,12 +106,12 @@ export function AdminAnalyticsChart() {
     );
   }
 
-  if (error) {
+  if (error || !analyticsData) {
     return (
       <Card className="p-6">
         <div className="text-center text-red-600">
           <p className="font-medium">Errore nel caricamento analytics</p>
-          <p className="text-sm mt-1">{error}</p>
+          <p className="text-sm mt-1">{error || 'Dati non disponibili'}</p>
           <button 
             onClick={fetchAnalytics}
             className="mt-3 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors"

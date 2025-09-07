@@ -82,3 +82,129 @@ async def list_users(db: Session = Depends(get_db), admin_user=Depends(require_a
 	users = db.query(User).all()
 	return users
 
+
+@router.put("/users/{user_id}/approve")
+async def approve_user(
+	user_id: int,
+	db: Session = Depends(get_db),
+	admin_user=Depends(require_admin),
+):
+	"""Approve a user (mainly for tutors)"""
+	user = db.query(User).filter(User.id == user_id).first()
+	if not user:
+		raise HTTPException(status_code=404, detail="User not found")
+	
+	user.is_verified = True
+	user.is_active = True
+	db.commit()
+	db.refresh(user)
+	
+	return {"message": "User approved successfully", "user": user}
+
+
+@router.put("/users/{user_id}/reject")
+async def reject_user(
+	user_id: int,
+	reason: str = "Non specificato",
+	db: Session = Depends(get_db),
+	admin_user=Depends(require_admin),
+):
+	"""Reject a user application"""
+	user = db.query(User).filter(User.id == user_id).first()
+	if not user:
+		raise HTTPException(status_code=404, detail="User not found")
+	
+	user.is_verified = False
+	user.is_active = False
+	db.commit()
+	db.refresh(user)
+	
+	return {"message": "User rejected", "reason": reason}
+
+
+@router.get("/pending-approvals")
+async def get_pending_approvals(db: Session = Depends(get_db), admin_user=Depends(require_admin)):
+	"""Get all users pending approval (mainly tutors)"""
+	from app.users.models import Tutor
+	
+	pending_tutors = db.query(User).join(Tutor).filter(
+		User.role == UserRole.TUTOR,
+		User.is_verified == False,
+		User.is_active == True
+	).all()
+	
+	return pending_tutors
+
+
+@router.get("/reports/overview")
+async def get_reports_overview(
+	days: int = 30,
+	db: Session = Depends(get_db), 
+	admin_user=Depends(require_admin)
+):
+	"""Get comprehensive report data"""
+	from datetime import datetime, timedelta
+	from sqlalchemy import func, and_
+	from app.packages.models import Package
+	from app.bookings.models import Booking, BookingStatus
+	from app.payments.models import Payment
+	
+	end_date = datetime.utcnow()
+	start_date = end_date - timedelta(days=days)
+	
+	# Revenue in period
+	total_revenue = db.query(func.coalesce(func.sum(Payment.amount_cents), 0)).filter(
+		and_(Payment.created_at >= start_date, Payment.status == "succeeded")
+	).scalar() or 0
+	
+	# Bookings stats
+	total_bookings = db.query(func.count(Booking.id)).filter(
+		Booking.created_at >= start_date
+	).scalar() or 0
+	
+	completed_bookings = db.query(func.count(Booking.id)).filter(
+		and_(
+			Booking.created_at >= start_date,
+			Booking.status == BookingStatus.COMPLETED
+		)
+	).scalar() or 0
+	
+	# Active users
+	active_users = db.query(func.count(User.id)).filter(
+		User.is_active == True
+	).scalar() or 0
+	
+	return {
+		"period_days": days,
+		"total_revenue_cents": total_revenue,
+		"total_bookings": total_bookings,
+		"completed_bookings": completed_bookings,
+		"completion_rate": (completed_bookings / total_bookings * 100) if total_bookings > 0 else 0,
+		"active_users": active_users,
+		"period_start": start_date.isoformat(),
+		"period_end": end_date.isoformat()
+	}
+
+
+@router.get("/settings")
+async def get_system_settings(admin_user=Depends(require_admin)):
+	"""Get system settings"""
+	# In futuro questo potrebbe leggere da una tabella settings
+	return {
+		"maintenance_mode": False,
+		"registration_enabled": True,
+		"email_notifications": True,
+		"max_file_size_mb": 10,
+		"session_timeout_minutes": 30
+	}
+
+
+@router.put("/settings")
+async def update_system_settings(
+	settings: dict,
+	admin_user=Depends(require_admin)
+):
+	"""Update system settings"""
+	# In futuro questo salverebbe in una tabella settings
+	return {"message": "Settings updated successfully", "settings": settings}
+

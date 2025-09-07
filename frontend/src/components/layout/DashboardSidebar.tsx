@@ -54,8 +54,10 @@ const adminNavigation = [
   { name: 'Utenti', href: '/dashboard/admin/users', icon: UserGroupIcon },
   { name: 'Approvazioni', href: '/dashboard/admin/approvals', icon: ClockIcon },
   { name: 'Assegnazioni', href: '/dashboard/admin/assignments', icon: AcademicCapIcon },
-  { name: 'Report', href: '/dashboard/admin/reports', icon: ChartBarIcon },
-  { name: 'Impostazioni', href: '/dashboard/admin/settings', icon: Cog6ToothIcon },
+  { name: 'Pagamenti', href: '/dashboard/admin/payments', icon: BanknotesIcon },
+  { name: 'Reports', href: '/admin/reports', icon: ChartBarIcon },
+  { name: 'Audit Logs', href: '/admin/audit-logs', icon: DocumentTextIcon },
+  { name: 'Impostazioni', href: '/admin/settings', icon: Cog6ToothIcon },
 ]
 
 function getNavigationForRole(role: 'student' | 'tutor' | 'admin') {
