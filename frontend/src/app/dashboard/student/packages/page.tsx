@@ -14,6 +14,7 @@ import {
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
 import RequireAuth from '@/components/auth/RequireAuth'
+import { packageService, UserPackageData } from '@/lib/api-services/packages'
 
 interface Package {
   id: string
@@ -46,11 +47,31 @@ export default function PackagesPage() {
         
         console.log('🔍 Fetching user packages from backend...')
         
-        // Implementazione API packages in attesa di backend endpoint
-        // const packages = await packageService.getUserPackages()
+        // Usa il servizio packages reale
+        const backendPackages = await packageService.getUserPackages()
+        console.log('📦 Backend packages response:', backendPackages)
         
-        // Per ora impostiamo array vuoto finché non implementiamo il backend
-        setPackages([])
+        // Trasforma i pacchetti dal backend nel formato corretto
+        const transformedPackages: Package[] = backendPackages.map((pkg: UserPackageData) => ({
+          id: pkg.id || 'unknown',
+          name: pkg.package?.name || pkg.customName || 'Pacchetto Sconosciuto',
+          subject: pkg.package?.subjects?.[0] || 'Generale',
+          tutorName: 'Assegnato dall\'Admin', // Per ora non abbiamo tutor specifico
+          totalLessons: pkg.totalHours || 0,
+          completedLessons: (pkg.totalHours || 0) - (pkg.remainingHours || 0),
+          remainingLessons: pkg.remainingHours || 0,
+          status: pkg.isExpiringSoon ? 'expired' : 'active',
+          startDate: new Date().toISOString(),
+          endDate: pkg.expiryDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          price: pkg.package?.price || 0,
+          description: pkg.package?.description || 'Pacchetto di lezioni personalizzato',
+          progress: pkg.totalHours ? ((pkg.totalHours - (pkg.remainingHours || 0)) / pkg.totalHours) * 100 : 0,
+          nextLessonDate: undefined, // Da implementare con booking API
+          lastLessonDate: undefined // Da implementare con booking API
+        }))
+        
+        console.log('✅ Packages transformed:', transformedPackages)
+        setPackages(transformedPackages)
         
       } catch (err) {
         console.error('❌ Error fetching packages:', err)
@@ -128,16 +149,16 @@ export default function PackagesPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">I Miei Pacchetti</h1>
             <p className="text-foreground-muted">
-              Visualizza e gestisci i tuoi pacchetti di lezioni
+              Visualizza i pacchetti di lezioni assegnati dall'amministrazione
             </p>
           </div>
-          <a
-            href="/packages"
+          <button
+            onClick={() => window.location.href = '/contact'}
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
           >
             <BookOpenIcon className="h-4 w-4" />
-            Acquista Pacchetti
-          </a>
+            Richiedi Pacchetti
+          </button>
         </div>
 
         {/* Quick Stats */}
@@ -197,18 +218,18 @@ export default function PackagesPage() {
               </h3>
               <p className="text-foreground-muted mb-6">
                 {filter === 'all' 
-                  ? "Non hai ancora acquistato nessun pacchetto di lezioni."
+                  ? "Non ti sono ancora stati assegnati pacchetti di lezioni. Contatta l'amministrazione per richiederne l'assegnazione."
                   : `Non hai pacchetti con stato "${filter}".`
                 }
               </p>
               {filter === 'all' && (
-                <a
-                  href="/packages"
+                <button
+                  onClick={() => window.location.href = '/contact'}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
                 >
                   <BookOpenIcon className="h-4 w-4" />
-                  Esplora Pacchetti
-                </a>
+                  Contatta Amministrazione
+                </button>
               )}
             </Card>
           ) : (

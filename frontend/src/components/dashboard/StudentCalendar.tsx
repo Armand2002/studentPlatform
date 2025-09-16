@@ -44,23 +44,51 @@ export default function StudentCalendar({ className }: StudentCalendarProps) {
 
   // API call per ottenere gli eventi del calendario
   useEffect(() => {
-    // API call per ottenere gli eventi del calendario
     const fetchCalendarEvents = async () => {
       try {
         setLoading(true)
         
         console.log('🔍 Fetching calendar events from backend...')
         
-        // Chiama l'endpoint per ottenere gli eventi del calendario
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('access_token')
         if (!token) {
           console.warn('⚠️ No token found, user not authenticated')
           setEvents([])
           return
         }
 
-        // Per ora non c'è un endpoint dedicato al calendario, impostiamo array vuoto
-        setEvents([])
+        // Recupera le lezioni prenotate dallo studente
+        const response = await fetch('http://localhost:8000/api/bookings/', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (response.ok) {
+          const bookings = await response.json()
+          console.log('📅 Bookings fetched:', bookings)
+          
+          // Converte le prenotazioni in eventi del calendario
+          const calendarEvents: CalendarEvent[] = bookings.map((booking: any) => ({
+            id: booking.id.toString(),
+            title: `Lezione - ${booking.slot?.subject || 'Materia non specificata'}`,
+            start: `${booking.slot?.date}T${booking.slot?.start_time}`,
+            end: `${booking.slot?.date}T${booking.slot?.end_time}`,
+            type: 'lesson' as const,
+            status: booking.status === 'confirmed' ? 'confirmed' as const : 'pending' as const,
+            subject: booking.slot?.subject,
+            tutor: booking.slot?.tutor?.full_name || 'Tutor non specificato',
+            location: booking.slot?.location || 'Online',
+            description: `Lezione con ${booking.slot?.tutor?.full_name || 'Tutor'} - ${booking.slot?.subject || 'Materia'}`
+          }))
+          
+          setEvents(calendarEvents)
+        } else {
+          console.error('❌ Failed to fetch bookings:', response.status)
+          setEvents([])
+        }
         
       } catch (err) {
         console.error('❌ Error fetching calendar events:', err)
@@ -120,14 +148,29 @@ export default function StudentCalendar({ className }: StudentCalendarProps) {
       ...props
     })
     
-    // TODO: Implementare modal dettagli evento
+    // Modal dettagli evento implementabile in futuro
+    alert(`Dettagli Lezione:\n\nTitolo: ${event.title}\nInizio: ${event.start}\nFine: ${event.end}\nTutor: ${props.tutor || 'N/A'}\nMateria: ${props.subject || 'N/A'}`)
   }
 
   const handleDateSelect = (selectInfo: any) => {
     // Per studenti view-only, non permettere creazione eventi
     console.log('Date selected:', selectInfo.startStr)
     
-    // TODO: Mostrare modal per visualizzare eventi del giorno
+    // Mostra eventi del giorno selezionato
+    const selectedDate = selectInfo.startStr
+    const dayEvents = events.filter(event => 
+      event.start.startsWith(selectedDate)
+    )
+    
+    if (dayEvents.length > 0) {
+      const eventsList = dayEvents.map(event => 
+        `• ${event.title} (${event.start.split('T')[1]?.substring(0,5) || 'Orario non specificato'})`
+      ).join('\n')
+      
+      alert(`Eventi del ${selectedDate}:\n\n${eventsList}`)
+    } else {
+      alert(`Nessun evento programmato per il ${selectedDate}`)
+    }
   }
 
   if (loading) {
@@ -191,103 +234,115 @@ export default function StudentCalendar({ className }: StudentCalendarProps) {
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="mb-6">
-        <h4 className="text-sm font-medium text-foreground mb-3">Legenda Eventi</h4>
-        <div className="flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            <span className="text-foreground-muted">Lezione Confermata</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <span className="text-foreground-muted">Lezione in Attesa</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <span className="text-foreground-muted">Scadenza/Esame</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-            <span className="text-foreground-muted">Esame</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span className="text-foreground-muted">Promemoria</span>
+      {/* Legend - Show only if there are events */}
+      {events.length > 0 && (
+        <div className="mb-6">
+          <h4 className="text-sm font-medium text-foreground mb-3">Legenda Eventi</h4>
+          <div className="flex flex-wrap gap-4 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-foreground-muted">Lezione Confermata</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <span className="text-foreground-muted">Lezione in Attesa</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <span className="text-foreground-muted">Scadenza</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+              <span className="text-foreground-muted">Esame</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+              <span className="text-foreground-muted">Promemoria</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Calendar */}
       <div className="bg-background-secondary rounded-lg p-4">
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-          headerToolbar={false}
-          initialView={view}
-          views={{
-            dayGridMonth: {
-              titleFormat: { month: 'long', year: 'numeric' }
-            },
-            timeGridWeek: {
-              titleFormat: { month: 'short', day: 'numeric', year: 'numeric' }
-            },
-            listWeek: {
-              titleFormat: { month: 'long', year: 'numeric' }
-            }
-          }}
-          events={calendarEvents}
-          eventClick={handleEventClick}
-          select={handleDateSelect}
-          selectable={true}
-          selectMirror={true}
-          dayMaxEvents={true}
-          moreLinkClick="popover"
-          eventDisplay="block"
-          eventTimeFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            meridiem: false,
-            hour12: false
-          }}
-          slotMinTime="08:00:00"
-          slotMaxTime="20:00:00"
-          allDaySlot={false}
-          slotDuration="00:30:00"
-          slotLabelFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            meridiem: false,
-            hour12: false
-          }}
-          locale="it"
-          firstDay={1}
-          weekends={true}
-          editable={false}
-          eventResizableFromStart={false}
-          eventDrop={() => {}} // Disable event dropping
-          eventResize={() => {}} // Disable event resizing
-          eventOverlap={false}
-          businessHours={{
-            daysOfWeek: [1, 2, 3, 4, 5, 6],
-            startTime: '08:00',
-            endTime: '20:00'
-          }}
-          nowIndicator={true}
-          scrollTime="08:00:00"
-          expandRows={true}
-          height="600px"
-          aspectRatio={1.35}
-          eventDidMount={(info) => {
-            // Aggiungi tooltip personalizzato
-            const eventEl = info.el
-            const title = info.event.title
-            const description = info.event.extendedProps.description
-            
-            if (description) {
-              eventEl.setAttribute('title', `${title}\n\n${description}`)
-            }
-          }}
-        />
+        {events.length === 0 && !loading ? (
+          <div className="text-center py-12">
+            <div className="text-4xl mb-4">📅</div>
+            <h3 className="text-lg font-medium text-foreground mb-2">Nessuna lezione programmata</h3>
+            <p className="text-foreground-muted text-sm">
+              Le tue lezioni prenotate appariranno qui. Vai alla sezione "Prenota Lezione" per iniziare.
+            </p>
+          </div>
+        ) : (
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+            headerToolbar={false}
+            initialView={view}
+            views={{
+              dayGridMonth: {
+                titleFormat: { month: 'long', year: 'numeric' }
+              },
+              timeGridWeek: {
+                titleFormat: { month: 'short', day: 'numeric', year: 'numeric' }
+              },
+              listWeek: {
+                titleFormat: { month: 'long', year: 'numeric' }
+              }
+            }}
+            events={calendarEvents}
+            eventClick={handleEventClick}
+            select={handleDateSelect}
+            selectable={true}
+            selectMirror={true}
+            dayMaxEvents={true}
+            moreLinkClick="popover"
+            eventDisplay="block"
+            eventTimeFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              meridiem: false,
+              hour12: false
+            }}
+            slotMinTime="08:00:00"
+            slotMaxTime="20:00:00"
+            allDaySlot={false}
+            slotDuration="00:30:00"
+            slotLabelFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              meridiem: false,
+              hour12: false
+            }}
+            locale="it"
+            firstDay={1}
+            weekends={true}
+            editable={false}
+            eventResizableFromStart={false}
+            eventDrop={() => {}} // Disable event dropping
+            eventResize={() => {}} // Disable event resizing
+            eventOverlap={false}
+            businessHours={{
+              daysOfWeek: [1, 2, 3, 4, 5, 6],
+              startTime: '08:00',
+              endTime: '20:00'
+            }}
+            nowIndicator={true}
+            scrollTime="08:00:00"
+            expandRows={true}
+            height="600px"
+            aspectRatio={1.35}
+            eventDidMount={(info) => {
+              // Aggiungi tooltip personalizzato
+              const eventEl = info.el
+              const title = info.event.title
+              const description = info.event.extendedProps.description
+              
+              if (description) {
+                eventEl.setAttribute('title', `${title}\n\n${description}`)
+              }
+            }}
+          />
+        )}
       </div>
 
       {/* Quick Stats */}

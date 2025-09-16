@@ -1,0 +1,138 @@
+{
+  "passed": 5,
+  "failed": 10,
+  "errors": [
+    "\u274c GET /health - Expected 200, got 404",
+    "\u274c POST /auth/register - Expected 201, got 422",
+    "\u274c POST /auth/register - Expected 201, got 422",
+    "\u274c POST /auth/login - Expected 200, got 422",
+    "\u274c POST /auth/login - Expected 200, got 422",
+    "\u274c POST /auth/login - Expected 200, got 422",
+    "\u274c GET /users/students - Expected 200, got 401",
+    "\u274c GET /slots/available - Expected 200, got 422",
+    "\u274c POST /pricing/calculate - Expected 200, got 401",
+    "\u274c POST /pricing/preview - Expected 200, got 422"
+  ],
+  "details": [
+    {
+      "endpoint": "/health",
+      "method": "GET",
+      "status_code": 404,
+      "expected": 200,
+      "passed": false,
+      "response": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/auth/register",
+      "method": "POST",
+      "status_code": 422,
+      "expected": 201,
+      "passed": false,
+      "response": "{'detail': [{'type': 'missing', 'loc': ['first_name'], 'msg': 'Field required', 'input': {'email': 'test_student_api@test.com', 'password': 'TestPassword123!', 'name': 'Test Student API', 'role': 'stu"
+    },
+    {
+      "endpoint": "/auth/register",
+      "method": "POST",
+      "status_code": 422,
+      "expected": 201,
+      "passed": false,
+      "response": "{'detail': [{'type': 'missing', 'loc': ['first_name'], 'msg': 'Field required', 'input': {'email': 'test_tutor_api@test.com', 'password': 'TestPassword123!', 'name': 'Test Tutor API', 'role': 'tutor'}"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status_code": 422,
+      "expected": 200,
+      "passed": false,
+      "response": "{'detail': [{'type': 'missing', 'loc': ['body', 'username'], 'msg': 'Field required', 'input': {'email': 'test_student_api@test.com', 'password': 'TestPassword123!'}, 'url': 'https://errors.pydantic.d"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status_code": 422,
+      "expected": 200,
+      "passed": false,
+      "response": "{'detail': [{'type': 'missing', 'loc': ['body', 'username'], 'msg': 'Field required', 'input': {'email': 'test_tutor_api@test.com', 'password': 'TestPassword123!'}, 'url': 'https://errors.pydantic.dev"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status_code": 422,
+      "expected": 200,
+      "passed": false,
+      "response": "{'detail': [{'type': 'missing', 'loc': ['body', 'username'], 'msg': 'Field required', 'input': {'email': 'admin@platform.com', 'password': 'admin123'}, 'url': 'https://errors.pydantic.dev/2.5/v/missin"
+    },
+    {
+      "endpoint": "/users/students",
+      "method": "GET",
+      "status_code": 401,
+      "expected": 200,
+      "passed": false,
+      "response": "{'detail': 'Not authenticated'}"
+    },
+    {
+      "endpoint": "/users/tutors",
+      "method": "GET",
+      "status_code": 200,
+      "expected": 200,
+      "passed": true,
+      "response": "[{'first_name': 'Tutor', 'last_name': 'Seed', 'bio': None, 'subjects': 'Matematica', 'is_available': True, 'id': 1, 'user_id': 2, 'created_at': '2025-08-29T16:42:05.535797', 'updated_at': '2025-08-29T"
+    },
+    {
+      "endpoint": "/packages",
+      "method": "GET",
+      "status_code": 200,
+      "expected": 200,
+      "passed": true,
+      "response": "[]"
+    },
+    {
+      "endpoint": "/slots/available",
+      "method": "GET",
+      "status_code": 422,
+      "expected": 200,
+      "passed": false,
+      "response": "{'detail': [{'type': 'missing', 'loc': ['query', 'tutor_id'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.5/v/missing'}]}"
+    },
+    {
+      "endpoint": "/pricing/calculate",
+      "method": "POST",
+      "status_code": 401,
+      "expected": 200,
+      "passed": false,
+      "response": "{'detail': 'Not authenticated'}"
+    },
+    {
+      "endpoint": "/pricing/preview",
+      "method": "POST",
+      "status_code": 422,
+      "expected": 200,
+      "passed": false,
+      "response": "{'detail': [{'type': 'missing', 'loc': ['body', 'lesson_type'], 'msg': 'Field required', 'input': {'package_id': 1, 'duration_hours': 5}, 'url': 'https://errors.pydantic.dev/2.5/v/missing'}, {'type': "
+    },
+    {
+      "endpoint": "/admin/users",
+      "method": "GET",
+      "status_code": 401,
+      "expected": 401,
+      "passed": true,
+      "response": "{'detail': 'Not authenticated'}"
+    },
+    {
+      "endpoint": "/admin/payments",
+      "method": "GET",
+      "status_code": 401,
+      "expected": 401,
+      "passed": true,
+      "response": "{'detail': 'Not authenticated'}"
+    },
+    {
+      "endpoint": "/dashboard/live",
+      "method": "GET",
+      "status_code": 401,
+      "expected": 401,
+      "passed": true,
+      "response": "{'detail': 'Not authenticated'}"
+    }
+  ]
+}

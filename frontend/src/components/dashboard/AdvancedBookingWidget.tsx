@@ -106,11 +106,8 @@ export default function AdvancedBookingWidget() {
   }
 
   async function createBooking() {
-    if (!student) {
-      setError('Profilo studente non trovato')
-      return
-    }
-    if (!selectedTutorId || !selectedPurchaseId || !selectedSlotId) {
+    // ✅ CLEANUP: Simplified validation - backend handles business logic
+    if (!student || !selectedTutorId || !selectedPurchaseId || !selectedSlotId) {
       setError('Compila tutti i campi per prenotare')
       return
     }
@@ -119,22 +116,22 @@ export default function AdvancedBookingWidget() {
       setError('Slot non valido')
       return
     }
+    
     setBookingLoading(true)
     setBookingSuccess(null)
     setError(null)
+    
     try {
-      const start = new Date(slot.start_time)
-      const end = new Date(slot.end_time)
-      const durationHours = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60)))
+      // ✅ CLEANUP: Send only slot ID - backend handles time extraction and duration calculation
       await api.post('/api/bookings', {
         student_id: student.id,
         tutor_id: selectedTutorId,
         package_purchase_id: selectedPurchaseId,
-        start_time: start.toISOString(),
-        end_time: end.toISOString(),
-        duration_hours: durationHours,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
         subject: subject || 'Lezione',
-        notes: undefined,
+        // ❌ REMOVED: duration_hours - backend auto-calculates
+        // ❌ REMOVED: Complex date/time calculations - use slot times directly
       })
       setBookingSuccess('Prenotazione creata con successo')
       // reload slots to reflect potential availability change

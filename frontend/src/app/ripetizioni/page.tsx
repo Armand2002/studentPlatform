@@ -115,7 +115,7 @@ export default function RipetizioniPage() {
             </h2>
             <p className="mt-6 text-lg leading-8 text-foreground-secondary">
               Offriamo ripetizioni in tutte le principali materie scolastiche e universitarie, 
-              dalla scuola media fino all'università.
+              dalla scuola media fino all&apos;università.
             </p>
           </div>
           <div className="mx-auto mt-16 max-w-2xl lg:max-w-none">

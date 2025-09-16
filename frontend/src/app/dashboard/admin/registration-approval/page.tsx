@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -85,43 +86,29 @@ export default function RegistrationApprovalPage() {
   const fetchPendingUsers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
+      // Use centralized api client (handles auth/refresh)
+      const response = await api.get('/api/admin/pending-approvals');
+      const data = response.data || [];
 
-      // Fetch pending approvals from admin API
-      const response = await fetch('/api/admin/pending-approvals', { headers });
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Fetch additional profile data for each user
-        const enrichedUsers = await Promise.all(
-          data.map(async (user: PendingUser) => {
-            try {
-              if (user.role === 'student') {
-                const studentRes = await fetch(`/api/users/students/${user.id}`, { headers });
-                if (studentRes.ok) {
-                  const studentData = await studentRes.json();
-                  user.student_profile = studentData;
-                }
-              } else if (user.role === 'tutor') {
-                const tutorRes = await fetch(`/api/users/tutors/${user.id}`, { headers });
-                if (tutorRes.ok) {
-                  const tutorData = await tutorRes.json();
-                  user.tutor_profile = tutorData;
-                }
-              }
-            } catch (error) {
-              console.log(`Could not fetch profile for user ${user.id}:`, error);
+      // Enrich profiles using api client
+      const enrichedUsers = await Promise.all(
+        data.map(async (user: PendingUser) => {
+          try {
+            if (user.role === 'student') {
+              const studentRes = await api.get(`/api/users/students/${user.id}`);
+              user.student_profile = studentRes.data || undefined;
+            } else if (user.role === 'tutor') {
+              const tutorRes = await api.get(`/api/users/tutors/${user.id}`);
+              user.tutor_profile = tutorRes.data || undefined;
             }
-            return user;
-          })
-        );
-        
-        setPendingUsers(enrichedUsers);
-      }
+          } catch (error) {
+            console.log(`Could not fetch profile for user ${user.id}:`, error);
+          }
+          return user;
+        })
+      );
+
+      setPendingUsers(enrichedUsers);
     } catch (error) {
       console.error('Error fetching pending users:', error);
       addNotification({
@@ -138,20 +125,13 @@ export default function RegistrationApprovalPage() {
     setProcessingIds(prev => [...prev, decision.userId]);
     
     try {
-      const token = localStorage.getItem('token');
-      const endpoint = decision.action === 'approve' 
+      const endpoint = decision.action === 'approve'
         ? `/api/admin/users/${decision.userId}/approve`
         : `/api/admin/users/${decision.userId}/reject?reason=${encodeURIComponent(decision.reason || 'Non specificato')}`;
-      
-      const response = await fetch(endpoint, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
 
-      if (response.ok) {
+      const response = await api.put(endpoint);
+
+      if (response && (response.status === 200 || response.status === 204 || response.status === undefined)) {
         const actionText = decision.action === 'approve' ? 'approvato' : 'rifiutato';
         addNotification({
           type: decision.action === 'approve' ? 'success' : 'warning',
@@ -163,11 +143,11 @@ export default function RegistrationApprovalPage() {
           }
         });
         
-        // Remove from pending list
-        setPendingUsers(prev => prev.filter(user => user.id !== decision.userId));
-        
-        // Send email notification (could be handled by backend)
-        await sendNotificationEmail(decision);
+  // Remove from pending list
+  setPendingUsers(prev => prev.filter(user => user.id !== decision.userId));
+
+  // Send email notification (could be handled by backend)
+  await sendNotificationEmail(decision);
         
       } else {
         throw new Error('Failed to process approval decision');
@@ -189,19 +169,11 @@ export default function RegistrationApprovalPage() {
 
   const sendNotificationEmail = async (decision: ApprovalDecision) => {
     try {
-      const token = localStorage.getItem('token');
-      await fetch('/api/admin/send-approval-notification', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userId: decision.userId,
-          action: decision.action,
-          reason: decision.reason,
-          notes: decision.notes
-        })
+      await api.post('/api/admin/send-approval-notification', {
+        userId: decision.userId,
+        action: decision.action,
+        reason: decision.reason,
+        notes: decision.notes,
       });
     } catch (error) {
       console.log('Could not send notification email:', error);

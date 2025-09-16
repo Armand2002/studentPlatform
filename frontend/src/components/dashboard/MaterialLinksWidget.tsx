@@ -77,7 +77,7 @@ export default function MaterialLinksWidget({ className }: MaterialLinksWidgetPr
         console.log('🔍 Fetching materials from backend...')
         
         // Chiama l'endpoint per ottenere i materiali dello studente
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('access_token')
         if (!token) {
           console.warn('⚠️ No token found, user not authenticated')
           setMaterials([])

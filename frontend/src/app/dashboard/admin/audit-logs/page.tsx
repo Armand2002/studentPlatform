@@ -15,6 +15,7 @@ import {
   InformationCircleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import { ACTION_TYPES, RESOURCE_TYPES } from '@/lib/constants';
 
 interface AuditLog {
   id: string;
@@ -32,34 +33,7 @@ interface AuditLog {
   session_id: string;
 }
 
-const ACTION_TYPES = [
-  'user.login',
-  'user.logout',
-  'user.register',
-  'user.update',
-  'user.delete',
-  'booking.create',
-  'booking.update',
-  'booking.cancel',
-  'payment.create',
-  'payment.confirm',
-  'admin.approve_user',
-  'admin.reject_user',
-  'admin.assign_package',
-  'settings.update',
-  'export.generate'
-];
-
-const RESOURCE_TYPES = [
-  'user',
-  'student',
-  'tutor',
-  'booking',
-  'payment',
-  'package',
-  'assignment',
-  'settings'
-];
+// ✅ CLEANUP: Constants moved to shared file - no more duplication
 
 
 

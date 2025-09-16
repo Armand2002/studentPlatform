@@ -80,7 +80,7 @@ export default function PaymentStatusWidget({ className }: PaymentStatusWidgetPr
         console.log('🔍 Fetching payments from backend...')
         
         // Chiama l'endpoint per ottenere i pagamenti dello studente
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('access_token')
         if (!token) {
           console.warn('⚠️ No token found, user not authenticated')
           setPayments([])

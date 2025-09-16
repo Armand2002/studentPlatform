@@ -137,6 +137,9 @@ class AdminPaymentService:
 
         if assignment and assignment.auto_activate_on_payment:
             assignment.status = models.PackageAssignmentStatus.ACTIVE
+            # set activated_at when transitioning to ACTIVE if not already set
+            if getattr(assignment, 'activated_at', None) is None:
+                assignment.activated_at = datetime.now(timezone.utc)
             db.add(assignment)
 
         db.commit()

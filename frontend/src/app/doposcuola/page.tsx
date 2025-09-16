@@ -110,7 +110,7 @@ export default function DoposcuolaPage() {
               I vantaggi del nostro doposcuola
             </h2>
             <p className="mt-6 text-lg leading-8 text-foreground-secondary">
-              Un servizio completo che va oltre l'aiuto compiti per supportare la crescita 
+              Un servizio completo che va oltre l&apos;aiuto compiti per supportare la crescita 
               educativa e personale di ogni bambino.
             </p>
           </div>
@@ -138,7 +138,7 @@ export default function DoposcuolaPage() {
             </h2>
             <p className="mt-6 text-lg leading-8 text-foreground-secondary">
               Una routine strutturata che alterna momenti di studio e pausa per garantire 
-              il massimo dell'apprendimento.
+              il massimo dell&apos;apprendimento.
             </p>
           </div>
           <div className="mx-auto mt-16 max-w-2xl">

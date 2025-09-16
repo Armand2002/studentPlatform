@@ -1,0 +1,34 @@
+{
+  "test_summary": {
+    "passed": 22,
+    "failed": 8,
+    "total": 30,
+    "success_rate": 73.33,
+    "grade": "C",
+    "production_ready": false,
+    "timestamp": "2025-09-11T16:54:29.528437",
+    "backend_url": "http://localhost:8000"
+  },
+  "authentication": {
+    "tokens_obtained": [
+      "student",
+      "tutor"
+    ],
+    "total_roles_tested": 2,
+    "oauth2_working": true
+  },
+  "test_data_created": {
+    "tutor_id": null
+  },
+  "errors": [
+    "\u274c POST /auth/login - Expected 200, got 422",
+    "\u274c POST /auth/login - Expected 200, got 422",
+    "\u274c POST /packages - Expected 201, got 422",
+    "\u274c POST /slots/ - Expected 201, got 422",
+    "\u274c POST /slots/multiple - Expected 201, got 422",
+    "\u274c GET /slots/available - Expected 200, got 422",
+    "\u274c POST /pricing/preview - Expected 200, got 422",
+    "\u274c POST /pricing/calculate - Expected 200, got 422"
+  ],
+  "detailed_results": []
+}

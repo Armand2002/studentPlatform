@@ -73,6 +73,10 @@ class AdminPackageAssignment(Base):
 	hours_used = Column(Integer, default=0)
 	hours_remaining = Column(Integer, nullable=False, default=0)
 
+	# timestamps for activation and completion (nullable)
+	activated_at = Column(DateTime, nullable=True)
+	completed_at = Column(DateTime, nullable=True)
+
 	admin_notes = Column(Text, nullable=True)
 	student_notes = Column(Text, nullable=True)
 	auto_activate_on_payment = Column(Boolean, default=True)

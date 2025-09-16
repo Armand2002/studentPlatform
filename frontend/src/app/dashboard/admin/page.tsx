@@ -1,6 +1,8 @@
 "use client"
 import RequireAuth from '@/components/auth/RequireAuth'
 import { useAuth } from '@/contexts/AuthContext'
+import { canAccessAdmin } from '@/lib/permissions'
+import { AdminOnlyAccess } from '@/components/ui/PermissionComponents'
 import { PlatformMetrics } from '@/components/dashboard/admin/PlatformMetrics'
 import { AdminAnalyticsChart } from '@/components/dashboard/admin/AdminAnalyticsChart'
 import { UserManagementWidget } from '@/components/dashboard/admin/UserManagementWidget'
@@ -35,7 +37,8 @@ export default function AdminDashboardPage() {
   
   return (
     <RequireAuth>
-      {user?.role === 'admin' ? (
+      {/* ✅ CLEANUP: Use centralized permission checking */}
+      {canAccessAdmin(user?.role) ? (
         <div className="space-y-6">
           {/* Welcome section */}
           <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 rounded-xl p-6 border border-primary/20">
@@ -70,12 +73,7 @@ export default function AdminDashboardPage() {
           <AdminQuickActionsWidget />
         </div>
       ) : (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Accesso Negato</h1>
-            <p className="text-gray-600">Solo gli amministratori possono accedere a questa sezione.</p>
-          </div>
-        </div>
+        <AdminOnlyAccess />
       )}
     </RequireAuth>
   )

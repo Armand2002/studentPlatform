@@ -65,6 +65,8 @@ from app.slots.routes import router as slots_router
 from app.analytics.routes import router as analytics_router
 from app.dashboard.routes import router as dashboard_router
 from app.admin.routes import router as admin_router  # 🆕 ADMIN ROUTER
+from app.contact.routes import router as contact_router  # 🆕 CONTACT ROUTER
+from app.notifications.routes import router as notifications_router  # 🆕 NOTIFICATIONS ROUTER
 from app.core.config import settings
 from app.utils.seed import seed_users
 
@@ -91,6 +93,8 @@ app.include_router(packages_router, prefix="/api/packages", tags=["Packages"])
 app.include_router(slots_router, prefix="/api/slots", tags=["Slots"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
 app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Dashboard"])
+app.include_router(contact_router, prefix="/api/contact", tags=["Contact"])  # 🆕 CONTACT ROUTER
+app.include_router(notifications_router, prefix="/api/notifications", tags=["Notifications"])  # 🆕 NOTIFICATIONS ROUTER
 
 # admin_router already sets its own prefix
 app.include_router(admin_router)

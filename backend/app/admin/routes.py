@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.auth.dependencies import get_current_user
 from app.users.models import UserRole, User
 from app.admin import schemas, services, models
+from app.packages import services as package_services, schemas as package_schemas
 from app.services.email_service import trigger_package_assigned
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
@@ -25,7 +26,7 @@ async def create_package_assignment(
 	admin_user=Depends(require_admin),
 ):
 	try:
-		assignment = await services.AdminPackageService.create_assignment(db, assignment_data, admin_user.id)
+		assignment = services.AdminPackageService.create_assignment(db, assignment_data, admin_user.id)
 	except ValueError as exc:
 		raise HTTPException(status_code=404, detail=str(exc))
 	# schedule email in the background (non-blocking)
@@ -44,7 +45,7 @@ async def record_payment(
 	admin_user=Depends(require_admin),
 ):
 	try:
-		payment = await services.AdminPaymentService.record_payment(db, payment_data, admin_user.id)
+		payment = services.AdminPaymentService.record_payment(db, payment_data, admin_user.id)
 	except ValueError as exc:
 		raise HTTPException(status_code=404, detail=str(exc))
 	# schedule receipt email in background if needed
@@ -58,7 +59,7 @@ async def confirm_payment(
 	admin_user=Depends(require_admin),
 ):
 	try:
-		payment = await services.AdminPaymentService.confirm_payment(db, payment_id, admin_user.id)
+		payment = services.AdminPaymentService.confirm_payment(db, payment_id, admin_user.id)
 	except ValueError as exc:
 		raise HTTPException(status_code=404, detail=str(exc))
 	return {"message": "Payment confirmed", "payment": payment}
@@ -207,4 +208,18 @@ async def update_system_settings(
 	"""Update system settings"""
 	# In futuro questo salverebbe in una tabella settings
 	return {"message": "Settings updated successfully", "settings": settings}
+
+
+@router.post("/packages", response_model=package_schemas.Package)
+async def admin_create_package(
+	package_data: package_schemas.PackageCreate,
+	db: Session = Depends(get_db),
+	admin_user=Depends(require_admin),
+):
+	"""Allow admins to create packages on behalf of tutors"""
+	# package_data must include tutor_id (admin selects a tutor)
+	try:
+		return await package_services.PackageService.create_package(db, package_data)
+	except ValueError as e:
+		raise HTTPException(status_code=400, detail=str(e))
 

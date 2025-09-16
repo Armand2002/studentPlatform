@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
   BookOpenIcon, 
   ClockIcon, 
@@ -25,6 +26,7 @@ interface PackageOverviewWidgetProps {
 }
 
 export default function PackageOverviewWidget({ className }: PackageOverviewWidgetProps) {
+  const router = useRouter()
   const [packages, setPackages] = useState<PackageData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -226,11 +228,17 @@ export default function PackageOverviewWidget({ className }: PackageOverviewWidg
       {/* Quick Actions */}
       <div className="mt-6 pt-4 border-t border-border">
         <div className="flex gap-2">
-          <button className="flex-1 px-3 py-2 text-xs font-medium text-primary border border-primary/20 rounded-md hover:bg-primary/10 transition-colors">
+          <button 
+            onClick={() => router.push('/dashboard/student/booking' as any)}
+            className="flex-1 px-3 py-2 text-xs font-medium text-primary border border-primary/20 rounded-md hover:bg-primary/10 transition-colors"
+          >
             Prenota Lezione
           </button>
-          <button className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors">
-            Acquista Nuovo
+          <button 
+            onClick={() => router.push('/dashboard/student/packages' as any)}
+            className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors"
+          >
+            Vedi Pacchetti
           </button>
         </div>
       </div>

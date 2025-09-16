@@ -61,6 +61,11 @@ function LandingNavLinks() {
                     variant="header" 
                 />
             </li>
+            <li>
+                <Link href="/contact" className="text-foreground-secondary hover:text-foreground transition-colors font-medium">
+                    Contatti
+                </Link>
+            </li>
         </ul>
     )
 }

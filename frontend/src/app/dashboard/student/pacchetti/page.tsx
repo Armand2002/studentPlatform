@@ -8,7 +8,6 @@ import {
   CreditCardIcon,
   CalendarDaysIcon,
   AcademicCapIcon,
-  ArrowRightIcon,
   PlusIcon
 } from '@heroicons/react/24/outline'
 import { Card } from '@/components/ui/Card'
@@ -123,7 +122,7 @@ export default function MyPackagesPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">I Miei Pacchetti</h1>
             <p className="text-foreground-muted">
-              Gestisci i tuoi pacchetti di lezioni e monitora l'utilizzo delle ore
+              Gestisci i tuoi pacchetti di lezioni e monitora l&apos;utilizzo delle ore
             </p>
           </div>
           

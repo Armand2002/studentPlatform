@@ -141,30 +141,31 @@ export default function WeeklyCalendarWidget() {
   }, [weekStart])
 
   async function createBooking() {
-    if (!student) return
-    if (!selectedSlot || !selectedPurchaseId) return
+    // ✅ CLEANUP: Simplified booking creation - backend handles all calculations
+    if (!student || !selectedSlot || !selectedPurchaseId) return
+    
     setBookingLoading(true)
     setBookingSuccess(null)
     try {
-      const start0 = new Date(selectedSlot.start_time)
-      const end0 = new Date(selectedSlot.end_time)
-      const durationHours0 = Math.max(1, Math.round((end0.getTime() - start0.getTime()) / (1000 * 60 * 60)))
       let ok = 0
       const total = recurrenceWeeks ?? 1
+      
       for (let k = 0; k < total; k += 1) {
-        const start = new Date(start0)
-        const end = new Date(end0)
-        start.setDate(start.getDate() + 7 * k)
-        end.setDate(end.getDate() + 7 * k)
+        // ✅ CLEANUP: Calculate recurrence dates only - backend handles duration
+        const startDate = new Date(selectedSlot.start_time)
+        const endDate = new Date(selectedSlot.end_time)
+        startDate.setDate(startDate.getDate() + 7 * k)
+        endDate.setDate(endDate.getDate() + 7 * k)
+        
         try {
           await api.post('/api/bookings', {
             student_id: student.id,
             tutor_id: selectedSlot.tutor_id,
             package_purchase_id: selectedPurchaseId,
-            start_time: start.toISOString(),
-            end_time: end.toISOString(),
-            duration_hours: durationHours0,
+            start_time: startDate.toISOString(),
+            end_time: endDate.toISOString(),
             subject: subject || 'Lezione',
+            // ❌ REMOVED: duration_hours calculation - backend auto-calculates
           })
           ok += 1
         } catch {

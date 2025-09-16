@@ -146,18 +146,8 @@ async def update_package(
     current_user: User = Depends(get_current_user)
 ):
     """Update package (Tutor who created it or Admin)"""
-    package = await services.PackageService.get_package_by_id(db, package_id)
-    if not package:
-        raise HTTPException(status_code=404, detail="Package not found")
-    
-    # Check permissions
-    if current_user.role == UserRole.TUTOR:
-        tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
-        if not tutor or tutor.id != package.tutor_id:
-            raise HTTPException(status_code=403, detail="Access denied")
-    
-    updated_package = await services.PackageService.update_package(db, package_id, package_data)
-    return updated_package
+    # Packages are immutable once created. Modifications are not allowed.
+    raise HTTPException(status_code=403, detail="Packages are immutable once created")
 
 @router.delete("/{package_id}", tags=["Packages"])
 async def delete_package(
@@ -169,15 +159,56 @@ async def delete_package(
     package = await services.PackageService.get_package_by_id(db, package_id)
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
-    
-    # Check permissions
+
+    # Only tutor who owns it or admin can attempt deletion
     if current_user.role == UserRole.TUTOR:
         tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
         if not tutor or tutor.id != package.tutor_id:
             raise HTTPException(status_code=403, detail="Access denied")
-    
-    success = await services.PackageService.delete_package(db, package_id)
+    elif current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Disallow deletion if package has purchases or admin assignments
+    from app.packages.models import PackagePurchase
+    from app.admin.models import AdminPackageAssignment
+
+    purchases_exist = db.query(PackagePurchase).filter(PackagePurchase.package_id == package_id).first() is not None
+    assignments_exist = db.query(AdminPackageAssignment).filter(AdminPackageAssignment.package_id == package_id).first() is not None
+
+    if purchases_exist or assignments_exist:
+        raise HTTPException(status_code=403, detail="Package cannot be deleted because it is linked to purchases or assignments")
+
+    # Safe to delete: perform hard delete
+    db.delete(package)
+    db.commit()
     return {"message": "Package deleted successfully"}
+
+
+@router.patch("/{package_id}/deactivate", tags=["Packages"])
+async def deactivate_package(
+    package_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Soft-deactivate a package (same checks as delete but only sets is_active=False)"""
+    package = await services.PackageService.get_package_by_id(db, package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    # Only tutor who owns it or admin can attempt deactivation
+    if current_user.role == UserRole.TUTOR:
+        tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
+        if not tutor or tutor.id != package.tutor_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Soft deactivate: set is_active False
+    package.is_active = False
+    from datetime import datetime, timezone
+    package.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    return {"message": "Package deactivated successfully"}
 
 # Package resource links
 @router.post("/{package_id}/links", response_model=schemas.PackageResourceLink, tags=["Packages"])

@@ -16,6 +16,8 @@ import {
   Ban
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { UserRole, UserStatus } from '@/lib/permissions';
+import { RoleIcon, StatusBadge } from '@/components/ui/PermissionComponents';
 
 interface User {
   id: number;
@@ -36,35 +38,15 @@ interface UserRowProps {
 }
 
 function UserRow({ user, onAction }: UserRowProps) {
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      active: 'bg-green-100 text-green-800',
-      pending: 'bg-yellow-100 text-yellow-800',
-      suspended: 'bg-red-100 text-red-800',
-      verified: 'bg-blue-100 text-blue-800',
-    };
-    return variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'tutor':
-        return <UserCheck className="w-4 h-4 text-blue-600" />;
-      case 'student':
-        return <GraduationCap className="w-4 h-4 text-green-600" />;
-      case 'admin':
-        return <Users className="w-4 h-4 text-purple-600" />;
-      default:
-        return <Users className="w-4 h-4 text-gray-600" />;
-    }
-  };
+  // ✅ CLEANUP: Removed duplicate getStatusBadge and getRoleIcon functions
+  // Using centralized components instead
 
   return (
     <tr className="border-b border-border hover:bg-background-secondary/50 transition-colors">
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            {getRoleIcon(user.role)}
+            <RoleIcon role={user.role as UserRole} />
           </div>
           <div>
             <p className="font-medium text-foreground">
@@ -75,9 +57,7 @@ function UserRow({ user, onAction }: UserRowProps) {
         </div>
       </td>
       <td className="px-4 py-3">
-        <Badge className={getStatusBadge(user.status)}>
-          {user.status}
-        </Badge>
+        <StatusBadge status={user.status as UserStatus} />
       </td>
       <td className="px-4 py-3 text-sm text-foreground-secondary">
         {new Date(user.registrationDate).toLocaleDateString()}

@@ -74,7 +74,28 @@ export function WebSocketProvider({ children, enabled = true }: WebSocketProvide
   const handleMessage = useCallback((data: any) => {
     switch (data.type) {
       case 'notification':
-        addNotification(data.payload);
+        // Handle real backend notification
+        if (data.data) {
+          // Dispatch custom event for NotificationSystem
+          window.dispatchEvent(new CustomEvent('websocket-notification', { 
+            detail: {
+              type: data.data.type,
+              title: data.data.title,
+              message: data.data.message,
+              action: data.data.action
+            }
+          }));
+        }
+        break;
+      case 'ping':
+        // Respond to ping
+        if (socket) {
+          socket.send(JSON.stringify({ type: 'pong' }));
+        }
+        break;
+      case 'pong':
+        // Handle pong response
+        console.log('Received pong from server');
         break;
       case 'approval_update':
         handleApprovalUpdate(data.payload);
@@ -85,13 +106,13 @@ export function WebSocketProvider({ children, enabled = true }: WebSocketProvide
       default:
         console.log('Unknown message type:', data.type);
     }
-  }, [addNotification, handleApprovalUpdate, handleSystemMessage]);
+  }, [socket, handleApprovalUpdate, handleSystemMessage]);
 
   const connect = useCallback(() => {
     if (!enabled) return;
 
     try {
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws';
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/notifications/ws';
       const token = localStorage.getItem('access_token');
       
       if (!token) {

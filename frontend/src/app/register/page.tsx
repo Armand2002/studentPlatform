@@ -22,7 +22,6 @@ export default function RegisterPage() {
   // Tutor fields
   const [bio, setBio] = useState('')
   const [subjects, setSubjects] = useState('')
-  const [hourlyRate, setHourlyRate] = useState('')
   const [isAvailable, setIsAvailable] = useState(true)
   // UI state
   const [loading, setLoading] = useState(false)
@@ -34,7 +33,7 @@ export default function RegisterPage() {
     setError(null)
     setLoading(true)
     
-    // Validazione base
+    // ✅ CLEANUP: Solo validazioni UX basilari - business logic nel backend
     if (!email || !password) {
       setError('Inserisci email e password')
       setLoading(false)
@@ -47,27 +46,13 @@ export default function RegisterPage() {
       return
     }
     
-    // Validazione campi specifici per ruolo
-    if (role === 'student') {
-      if (!dateOfBirth || !institute || !classLevel || !phoneNumber) {
-        setError('Completa tutti i campi del profilo studente')
-        setLoading(false)
-        return
-      }
-    } else if (role === 'tutor') {
-      if (!hourlyRate) {
-        setError('Inserisci la tariffa oraria')
-        setLoading(false)
-        return
-      }
-    }
+    // ❌ RIMOSSO: Business logic ora gestita completamente dal backend
+    // - Campo requirements validation
+    // - Phone number normalization  
+    // - Role-specific validations
     
     try {
-      let normalizedPhone = phoneNumber
-      // Se l'utente inserisce un numero italiano senza prefisso, aggiungi +39
-      if (role === 'student' && phoneNumber && /^3\d{9}$/.test(phoneNumber)) {
-        normalizedPhone = `+39${phoneNumber}`
-      }
+      // ✅ CLEANUP: Payload completo - backend si occupa di validazione e normalizzazione
       const registrationData: any = {
         email,
         password,
@@ -75,18 +60,19 @@ export default function RegisterPage() {
         first_name: firstName,
         last_name: lastName,
       }
+      
+      // ✅ CLEANUP: Aggiungi tutti i campi senza validazione - backend decide cosa è valido
       if (role === 'student') {
         Object.assign(registrationData, {
           date_of_birth: dateOfBirth,
           institute,
           class_level: classLevel,
-          phone_number: normalizedPhone
+          phone_number: phoneNumber // ✅ No more normalization - backend handles it
         })
       } else if (role === 'tutor') {
         Object.assign(registrationData, {
           bio,
           subjects,
-          hourly_rate: parseInt(hourlyRate),
           is_available: isAvailable
         })
       }
@@ -94,30 +80,17 @@ export default function RegisterPage() {
       setSuccess(true)
       setTimeout(() => router.push('/dashboard'), 1200)
     } catch (err: unknown) {
-      let msg = 'Registrazione fallita'
-      if (isAxiosError(err)) {
-        const status = err.response?.status
-        const data = err.response?.data
-        if (status && status >= 500) {
-          msg = 'Errore del server, riprova più tardi'
-        } else if (typeof data === 'object' && data !== null) {
-          if ('detail' in data) {
-            if (typeof data.detail === 'string') {
-              msg = data.detail
-            } else if (Array.isArray(data.detail)) {
-              // FastAPI validation error: array of error objects
-              msg = data.detail.map((e: any) => e.msg).join(' | ')
-            } else if (typeof data.detail === 'object') {
-              msg = JSON.stringify(data.detail)
-            }
-          } else {
-            msg = JSON.stringify(data)
-          }
-        }
-      } else if (err instanceof Error) {
-        msg = err.message
-      }
+      // ✅ CLEANUP: Simplified error handling - backend provides user-friendly messages
       console.error('Register failed', err)
+      
+      let msg = 'Registrazione fallita'
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        // ✅ Backend now provides clean error messages
+        msg = typeof err.response.data.detail === 'string' 
+          ? err.response.data.detail 
+          : 'Errore di validazione'
+      }
+      
       setError(msg)
     } finally {
       setLoading(false)
@@ -276,19 +249,6 @@ export default function RegisterPage() {
                       placeholder="Es: Matematica, Fisica, Chimica" 
                       value={subjects} 
                       onChange={(e)=>setSubjects(e.target.value)} 
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="register-rate" className="mb-1 block text-sm font-medium text-foreground">Tariffa Oraria (€)</label>
-                    <input 
-                      id="register-rate" 
-                      type="number" 
-                      required 
-                      min="0"
-                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base" 
-                      placeholder="25" 
-                      value={hourlyRate} 
-                      onChange={(e)=>setHourlyRate(e.target.value)} 
                     />
                   </div>
                   <div className="flex items-center">

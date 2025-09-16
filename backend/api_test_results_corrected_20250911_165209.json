@@ -1,0 +1,25 @@
+{
+  "summary": {
+    "passed": 21,
+    "failed": 7,
+    "total": 28,
+    "success_rate": 75.0,
+    "timestamp": "2025-09-11T16:52:09.592234",
+    "backend_url": "http://localhost:8000"
+  },
+  "errors": [
+    "\u274c POST /auth/login - Expected 200, got 422",
+    "\u274c POST /auth/login - Expected 200, got 422",
+    "\u274c POST /packages - Expected 201, got 422",
+    "\u274c POST /slots/ - Expected 201, got 422",
+    "\u274c POST /slots/multiple - Expected 201, got 422",
+    "\u274c GET /bookings/completed - Expected 200, got 500",
+    "\u274c POST /pricing/calculate - Expected 200, got 422"
+  ],
+  "test_details": [],
+  "tokens_obtained": [
+    "student",
+    "tutor"
+  ],
+  "test_data_created": {}
+}

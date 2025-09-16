@@ -35,7 +35,7 @@ interface CompletedLesson {
 interface StudyStats {
   totalLessons: number
   totalHours: number
-  averageRating: number
+  averageRating: number | null
   completedPackages: number
   currentStreak: number
   longestStreak: number
@@ -57,15 +57,103 @@ export default function HistoryPage() {
         
         console.log('🔍 Fetching lesson history from backend...')
         
-        // Implementazione API history in attesa di backend endpoint
-        // const [lessons, stats] = await Promise.all([
-        //   lessonService.getCompletedLessons(),
-        //   analyticsService.getStudyStats()
-        // ])
-        
-        // Per ora impostiamo dati vuoti finché non implementiamo il backend
-        setLessons([])
-        setStats(null)
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setLessons([])
+          setStats(null)
+          return
+        }
+
+        // Recupera le lezioni completate dall'API bookings
+        const response = await fetch('http://localhost:8000/api/bookings/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (response.ok) {
+          const bookings = await response.json()
+          console.log('📚 Bookings fetched:', bookings)
+          
+          // Filtra solo le lezioni completate e trasforma i dati
+          const completedBookings = bookings.filter((booking: any) => 
+            booking.status === 'confirmed' && 
+            new Date(booking.slot?.date + 'T' + booking.slot?.end_time) < new Date()
+          )
+          
+          const transformedLessons: CompletedLesson[] = completedBookings.map((booking: any) => ({
+            id: booking.id.toString(),
+            subject: booking.slot?.subject || 'Materia non specificata',
+            tutorName: booking.slot?.tutor?.full_name || 'Tutor sconosciuto',
+            date: booking.slot?.date || new Date().toISOString().split('T')[0],
+            duration: 60, // Default duration
+            type: 'online' as const,
+            rating: undefined, // Da implementare sistema di rating
+            review: undefined,
+            packageName: undefined, // Da collegare con packages
+            materials: [],
+            homework: undefined,
+            nextTopics: []
+          }))
+          
+          // Calcola statistiche reali dai dati
+          const calculateRealStats = (lessons: CompletedLesson[]) => {
+            // Calcola la durata totale basandosi sui dati reali
+            const totalHours = lessons.reduce((sum, lesson) => sum + lesson.duration, 0)
+            
+            // Calcola rating medio se ci sono rating disponibili
+            const lessonsWithRating = lessons.filter(lesson => lesson.rating && lesson.rating > 0)
+            const averageRating = lessonsWithRating.length > 0 
+              ? lessonsWithRating.reduce((sum, lesson) => sum + (lesson.rating || 0), 0) / lessonsWithRating.length
+              : null // null se non ci sono rating invece di un valore mock
+            
+            // Calcola streak semplificato (giorni con lezioni nell'ultima settimana)
+            const oneWeekAgo = new Date()
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+            const recentLessons = lessons.filter(lesson => new Date(lesson.date) >= oneWeekAgo)
+            const currentStreak = recentLessons.length
+            
+            return {
+              totalHours,
+              averageRating,
+              currentStreak,
+              longestStreak: currentStreak // Semplificato per ora
+            }
+          }
+          
+          const realStats = calculateRealStats(transformedLessons)
+          
+          // Calcola statistiche complete
+          const calculatedStats: StudyStats = {
+            totalLessons: transformedLessons.length,
+            totalHours: realStats.totalHours,
+            averageRating: realStats.averageRating, // null se non ci sono rating
+            completedPackages: 0, // TODO: Da implementare con API packages
+            currentStreak: realStats.currentStreak,
+            longestStreak: realStats.longestStreak,
+            favoriteSubject: transformedLessons.length > 0 
+              ? (() => {
+                  const subjectCounts = transformedLessons.reduce((acc: Record<string, number>, lesson) => {
+                    const subject = lesson.subject || 'Materia sconosciuta'
+                    acc[subject] = (acc[subject] || 0) + 1
+                    return acc
+                  }, {} as Record<string, number>)
+                  const topSubject = Object.entries(subjectCounts).sort(([,a], [,b]) => b - a)[0]
+                  return topSubject ? topSubject[0] : 'Nessuna'
+                })()
+              : 'Nessuna',
+            improvementAreas: ['Da analizzare con più dati']
+          }
+          
+          setLessons(transformedLessons)
+          setStats(calculatedStats)
+        } else {
+          console.error('❌ Failed to fetch bookings:', response.status)
+          setLessons([])
+          setStats(null)
+        }
         
       } catch (err) {
         console.error('❌ Error fetching lesson history:', err)
@@ -171,7 +259,12 @@ export default function HistoryPage() {
               <div className="flex items-center justify-center mb-2">
                 <StarIcon className="h-8 w-8 text-yellow-500" />
               </div>
-              <div className="text-2xl font-bold text-foreground">{stats.averageRating.toFixed(1)}</div>
+              <div className="text-2xl font-bold text-foreground">
+                {stats.averageRating !== null && stats.averageRating > 0 
+                  ? stats.averageRating.toFixed(1) 
+                  : 'N/A'
+                }
+              </div>
               <div className="text-sm text-foreground-muted">Valutazione media</div>
             </Card>
             
@@ -338,7 +431,7 @@ export default function HistoryPage() {
                 {lesson.review && (
                   <div className="p-3 bg-background-secondary rounded-lg mb-4">
                     <div className="text-sm font-medium text-foreground-secondary mb-1">La tua recensione:</div>
-                    <p className="text-sm text-foreground-secondary italic">"{lesson.review}"</p>
+                    <p className="text-sm text-foreground-secondary italic">&quot;{lesson.review}&quot;</p>
                   </div>
                 )}
 

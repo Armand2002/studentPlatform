@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
+import { useState, useEffect, useContext, createContext, ReactNode, useMemo } from 'react';
 import { 
   BellIcon, 
   XMarkIcon,
@@ -59,16 +59,23 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('notifications', JSON.stringify(notifications));
   }, [notifications]);
 
-  // TODO: Replace with real WebSocket integration
-  // useEffect(() => {
-  //   // Connect to WebSocket for real-time notifications
-  //   // const ws = new WebSocket('ws://backend/notifications');
-  //   // ws.onmessage = (event) => {
-  //   //   const notification = JSON.parse(event.data);
-  //   //   addNotification(notification);
-  //   // };
-  //   // return () => ws.close();
-  // }, []);
+  // Real WebSocket integration for notifications
+  useEffect(() => {
+    // This component will receive messages from parent WebSocket provider
+    // through the addNotification function being called by WebSocket handlers
+    const handleWebSocketNotification = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const notification = customEvent.detail;
+      addNotification(notification);
+    };
+
+    // Listen for WebSocket notifications
+    window.addEventListener('websocket-notification', handleWebSocketNotification);
+    
+    return () => {
+      window.removeEventListener('websocket-notification', handleWebSocketNotification);
+    };
+  }, []);
 
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const newNotification: Notification = {
@@ -103,16 +110,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const contextValue = useMemo(() => ({
+    notifications,
+    unreadCount,
+    addNotification,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+    clearAll
+  }), [notifications, unreadCount]);
+
   return (
-    <NotificationContext.Provider value={{
-      notifications,
-      unreadCount,
-      addNotification,
-      markAsRead,
-      markAllAsRead,
-      removeNotification,
-      clearAll
-    }}>
+    <NotificationContext.Provider value={contextValue}>
       {children}
     </NotificationContext.Provider>
   );
@@ -283,6 +292,9 @@ export function NotificationBell() {
         <div
           className="fixed inset-0 z-40"
           onClick={() => setIsOpen(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setIsOpen(false)}
+          role="presentation"
+          aria-hidden="true"
         />
       )}
     </div>
@@ -294,8 +306,8 @@ export function ToastNotification({
   notification, 
   onClose 
 }: { 
-  notification: Notification; 
-  onClose: () => void;
+  readonly notification: Notification; 
+  readonly onClose: () => void;
 }) {
   useEffect(() => {
     const timer = setTimeout(onClose, 5000); // Auto-close after 5 seconds
@@ -335,7 +347,7 @@ export function ToastNotification({
 
 // Toast Container
 export function ToastContainer() {
-  const { notifications } = useNotifications();
+  const { notifications, markAsRead } = useNotifications();
   const [toasts, setToasts] = useState<Notification[]>([]);
 
   useEffect(() => {
@@ -350,6 +362,12 @@ export function ToastContainer() {
   }, [notifications, toasts]);
 
   const removeToast = (id: string) => {
+    // Mark the notification as read so it won't be re-added as a toast
+    try {
+      markAsRead(id);
+    } catch (err) {
+      // ignore
+    }
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 

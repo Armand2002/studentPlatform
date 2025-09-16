@@ -4,7 +4,7 @@ Calcoli automatici per durata, prezzo, split tutor/piattaforma
 """
 from sqlalchemy.orm import Session
 from sqlalchemy import event
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, Dict, Any
 
@@ -210,10 +210,18 @@ class BookingAutoCalculations:
             if purchase.hours_remaining >= hours_to_process:
                 purchase.hours_used += hours_to_process
                 purchase.hours_remaining -= hours_to_process
-                
+
                 # Auto-disattiva se finite le ore
                 if purchase.hours_remaining <= 0:
                     purchase.is_active = False
+
+                # Also apply consumption to any linked admin assignment
+                BookingAutoCalculations._consume_admin_assignment_hours(
+                    db=db,
+                    purchase=purchase,
+                    booking=booking,
+                    hours_to_consume=hours_to_process,
+                )
                     
         elif operation == "refund":
             # Rimborsa ore (come Excel addizione automatica)
@@ -224,8 +232,36 @@ class BookingAutoCalculations:
             if purchase.hours_remaining > 0 and not purchase.is_active:
                 purchase.is_active = True
         
-        purchase.updated_at = datetime.utcnow()
+        purchase.updated_at = datetime.now(timezone.utc)
         db.commit()
+
+    @staticmethod
+    def _consume_admin_assignment_hours(db: Session, purchase, booking: models.Booking, hours_to_consume: int):
+        """Try to find an ACTIVE AdminPackageAssignment corresponding to this purchase and deduct hours.
+
+        Matching is done by student_id, tutor_id and package_id. If assignment hours reach 0, mark completed.
+        """
+        try:
+            from app.admin import models as admin_models
+        except Exception:
+            return
+
+        assignment = db.query(admin_models.AdminPackageAssignment).filter(
+            admin_models.AdminPackageAssignment.student_id == purchase.student_id,
+            admin_models.AdminPackageAssignment.tutor_id == booking.tutor_id,
+            admin_models.AdminPackageAssignment.package_id == purchase.package_id,
+            admin_models.AdminPackageAssignment.status == admin_models.PackageAssignmentStatus.ACTIVE,
+        ).first()
+
+        if not assignment:
+            return
+
+        assignment.hours_used = (assignment.hours_used or 0) + hours_to_consume
+        assignment.hours_remaining = max(0, (assignment.hours_remaining or 0) - hours_to_consume)
+        if assignment.hours_remaining <= 0:
+            assignment.status = admin_models.PackageAssignmentStatus.COMPLETED
+            assignment.completed_at = datetime.now(timezone.utc)
+        db.add(assignment)
     
     @staticmethod
     def validate_booking_logic(booking: models.Booking, db: Session) -> Dict[str, Any]:

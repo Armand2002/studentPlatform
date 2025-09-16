@@ -15,7 +15,7 @@ export default function MaterialsLink({
   showIcon = false,
   showText = true
 }: MaterialsLinkProps) {
-  const googleDriveUrl = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_URL || '#'
+  const googleDriveUrl = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_URL || 'https://drive.google.com/drive/folders/1Sqs2GpEk8eVTjcvfQcA5rOxmxIujxNdI?usp=drive_link'
   const linkText = process.env.NEXT_PUBLIC_MATERIALS_LINK_TEXT || '📚 Materiali Didattici'
 
   const handleClick = () => {

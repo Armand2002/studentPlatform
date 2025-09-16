@@ -2,22 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  UserPlusIcon,
-  UserMinusIcon,
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   ArrowDownTrayIcon,
-  PencilIcon,
   TrashIcon,
   EyeIcon,
-  UsersIcon,
-  AcademicCapIcon,
-  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { useNotifications } from '@/components/notifications/NotificationSystem';
+import { UserRole } from '@/lib/permissions';
+import { RoleIcon, RoleBadge } from '@/components/ui/PermissionComponents';
+import { api } from '@/lib/api';
+import SearchBar from '@/components/ui/SearchBar'
 
 interface User {
   id: number;
@@ -96,38 +93,26 @@ export default function UserManagementPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-
-      // Fetch all users
-      const usersRes = await fetch('/api/admin/users', { headers });
-      if (usersRes.ok) {
-        const usersData = await usersRes.json();
-        setUsers(usersData);
-      }
+      // Fetch all users usando la libreria api
+      const usersRes = await api.get('/api/admin/users');
+      setUsers(usersRes.data);
 
       // Fetch students
-      const studentsRes = await fetch('/api/users/students', { headers });
-      if (studentsRes.ok) {
-        const studentsData = await studentsRes.json();
-        setStudents(studentsData);
-      }
+      const studentsRes = await api.get('/api/users/students');
+      setStudents(studentsRes.data);
 
       // Fetch tutors
-      const tutorsRes = await fetch('/api/users/tutors', { headers });
-      if (tutorsRes.ok) {
-        const tutorsData = await tutorsRes.json();
-        setTutors(tutorsData);
-      }
+      const tutorsRes = await api.get('/api/users/tutors');
+      setTutors(tutorsRes.data);
 
       // Fetch pending approvals
-      const approvalsRes = await fetch('/api/admin/pending-approvals', { headers });
-      if (approvalsRes.ok) {
-        const approvalsData = await approvalsRes.json();
-        setPendingApprovals(approvalsData);
+      try {
+        const approvalsRes = await api.get('/api/admin/pending-approvals');
+        setPendingApprovals(approvalsRes.data);
+      } catch (error) {
+        // Endpoint potrebbe non esistere, ignoriamo per ora
+        console.log('Pending approvals endpoint not available');
+        setPendingApprovals([]);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -141,95 +126,80 @@ export default function UserManagementPage() {
     }
   };
 
+  // helper to update local state optimistically after approve/reject/delete
+  const markUserApprovedLocally = (userId: number) => {
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_verified: true } : u));
+    setPendingApprovals(prev => prev.filter(p => p.id !== userId));
+    setStudents(prev => prev.map(s => s.user && s.user.id === userId ? { ...s, user: { ...s.user, is_verified: true } } : s));
+    setTutors(prev => prev.map(t => t.user && t.user.id === userId ? { ...t, user: { ...t.user, is_verified: true } } : t));
+  }
+
+  const markUserRejectedLocally = (userId: number) => {
+    setPendingApprovals(prev => prev.filter(p => p.id !== userId));
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_verified: false } : u));
+    setStudents(prev => prev.map(s => s.user && s.user.id === userId ? { ...s, user: { ...s.user, is_verified: false } } : s));
+    setTutors(prev => prev.map(t => t.user && t.user.id === userId ? { ...t, user: { ...t.user, is_verified: false } } : t));
+  }
+
   const handleApproveUser = async (userId: number, reason?: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/admin/users/${userId}/approve`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        addNotification({
-          type: 'success',
-          title: 'Utente Approvato',
-          message: 'L\'utente è stato approvato con successo'
-        });
-        fetchData();
-      }
+      // optimistic update
+      markUserApprovedLocally(userId);
+      await api.put(`/api/admin/users/${userId}/approve`);
+      addNotification({ type: 'success', title: 'Utente Approvato', message: "L'utente è stato approvato con successo" });
+      // reconciliation
+      await fetchData();
     } catch (error) {
       console.error('Error approving user:', error);
       addNotification({
         type: 'error',
         title: 'Errore Approvazione',
-        message: 'Impossibile approvare l\'utente'
+        message: "Impossibile approvare l'utente"
       });
     }
   };
 
   const handleRejectUser = async (userId: number, reason: string = 'Non specificato') => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/admin/users/${userId}/reject?reason=${encodeURIComponent(reason)}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        addNotification({
-          type: 'warning',
-          title: 'Utente Rifiutato',
-          message: `L'utente è stato rifiutato: ${reason}`
-        });
-        fetchData();
-      }
+      // optimistic update
+      markUserRejectedLocally(userId);
+      await api.put(`/api/admin/users/${userId}/reject?reason=${encodeURIComponent(reason)}`);
+      addNotification({ type: 'warning', title: 'Utente Rifiutato', message: `L'utente è stato rifiutato: ${reason}` });
+      await fetchData();
     } catch (error) {
       console.error('Error rejecting user:', error);
       addNotification({
         type: 'error',
         title: 'Errore Rifiuto',
-        message: 'Impossibile rifiutare l\'utente'
+        message: "Impossibile rifiutare l'utente"
       });
     }
   };
 
   const handleDeleteUser = async (userId: number, userType: 'student' | 'tutor') => {
     try {
-      const token = localStorage.getItem('token');
-      const endpoint = userType === 'student' 
-        ? `/api/users/students/${userId}` 
+      const endpoint = userType === 'student'
+        ? `/api/users/students/${userId}`
         : `/api/users/tutors/${userId}`;
-      
-      const response = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      // optimistic removal
+      setStudents(prev => prev.filter(s => s.id !== userId));
+      setTutors(prev => prev.filter(t => t.id !== userId));
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      await api.delete(endpoint);
+      addNotification({
+        type: 'success',
+        title: 'Utente Eliminato',
+        message: `${userType === 'student' ? 'Studente' : 'Tutor'} eliminato con successo`
       });
-
-      if (response.ok) {
-        addNotification({
-          type: 'success',
-          title: 'Utente Eliminato',
-          message: `${userType === 'student' ? 'Studente' : 'Tutor'} eliminato con successo`
-        });
-        fetchData();
-        setShowDeleteModal(false);
-        setUserToDelete(null);
-      }
+      fetchData();
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     } catch (error) {
       console.error('Error deleting user:', error);
       addNotification({
         type: 'error',
         title: 'Errore Eliminazione',
-        message: 'Impossibile eliminare l\'utente'
+        message: "Impossibile eliminare l'utente"
       });
     }
   };
@@ -238,19 +208,12 @@ export default function UserManagementPage() {
     if (selectedUsers.length === 0) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
 
       switch (action.type) {
         case 'approve':
           for (const userId of selectedUsers) {
-            await fetch(`/api/admin/users/${userId}/approve`, {
-              method: 'PUT',
-              headers
-            });
+            markUserApprovedLocally(userId);
+            await api.put(`/api/admin/users/${userId}/approve`);
           }
           addNotification({
             type: 'success',
@@ -261,10 +224,8 @@ export default function UserManagementPage() {
 
         case 'reject':
           for (const userId of selectedUsers) {
-            await fetch(`/api/admin/users/${userId}/reject?reason=${encodeURIComponent(action.reason || 'Azione multipla')}`, {
-              method: 'PUT',
-              headers
-            });
+            markUserRejectedLocally(userId);
+            await api.put(`/api/admin/users/${userId}/reject?reason=${encodeURIComponent(action.reason || 'Azione multipla')}`);
           }
           addNotification({
             type: 'warning',
@@ -315,11 +276,28 @@ export default function UserManagementPage() {
     link.click();
   };
 
-  const filteredUsers = users.filter(user => {
-    if (searchTerm && !user.email.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !(user.first_name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        !(user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()))) {
-      return false;
+  // Choose the underlying list to filter depending on the active tab.
+  // When viewing students/tutors we want to filter the corresponding arrays
+  // (they include nested `user` objects), otherwise use the main `users` list
+  const baseList: User[] =
+    activeTab === 'students'
+      ? students.map(s => s.user).filter(Boolean) as User[]
+      : activeTab === 'tutors'
+      ? tutors.map(t => t.user).filter(Boolean) as User[]
+      : activeTab === 'approvals'
+      ? pendingApprovals
+      : users;
+
+  const filteredUsers = baseList.filter(user => {
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      if (
+        !user.email.toLowerCase().includes(q) &&
+        !(user.first_name?.toLowerCase().includes(q)) &&
+        !(user.last_name?.toLowerCase().includes(q))
+      ) {
+        return false;
+      }
     }
     if (filterRole && user.role !== filterRole) return false;
     if (filterStatus === 'verified' && !user.is_verified) return false;
@@ -343,24 +321,8 @@ export default function UserManagementPage() {
     return user.email;
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'student': return <UsersIcon className="h-4 w-4 text-blue-500" />;
-      case 'tutor': return <AcademicCapIcon className="h-4 w-4 text-green-500" />;
-      case 'admin': return <ShieldCheckIcon className="h-4 w-4 text-purple-500" />;
-      default: return <UsersIcon className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getRoleBadge = (role: string) => {
-    const baseClasses = "px-2 py-1 text-xs font-medium rounded-full";
-    switch (role) {
-      case 'student': return `${baseClasses} bg-blue-100 text-blue-800`;
-      case 'tutor': return `${baseClasses} bg-green-100 text-green-800`;
-      case 'admin': return `${baseClasses} bg-purple-100 text-purple-800`;
-      default: return `${baseClasses} bg-gray-100 text-gray-800`;
-    }
-  };
+  // ✅ CLEANUP: Removed duplicate getRoleIcon and getRoleBadge functions
+  // Using centralized components from /lib/permissions instead
 
   const tabs = [
     { id: 'users', label: 'Tutti gli Utenti', count: users.length },
@@ -440,14 +402,7 @@ export default function UserManagementPage() {
         <div className="flex flex-wrap items-center gap-4">
           {/* Search */}
           <div className="relative flex-1 min-w-64">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Cerca per email, nome o cognome..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Cerca per email, nome o cognome..." />
           </div>
 
           {/* Role Filter */}
@@ -609,10 +564,8 @@ export default function UserManagementPage() {
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      {getRoleIcon(user.role)}
-                      <span className={getRoleBadge(user.role)}>
-                        {user.role}
-                      </span>
+                      <RoleIcon role={user.role as UserRole} />
+                      <RoleBadge role={user.role as UserRole} />
                     </div>
                   </td>
                   
@@ -762,10 +715,8 @@ export default function UserManagementPage() {
                     <h4 className="text-xl font-semibold">{getUserDisplayName(selectedUser)}</h4>
                     <p className="text-foreground-secondary">{selectedUser.email}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      {getRoleIcon(selectedUser.role)}
-                      <span className={getRoleBadge(selectedUser.role)}>
-                        {selectedUser.role}
-                      </span>
+                      <RoleIcon role={selectedUser.role as UserRole} />
+<RoleBadge role={selectedUser.role as UserRole} />
                     </div>
                   </div>
                 </div>
@@ -851,7 +802,7 @@ export default function UserManagementPage() {
             
             <div className="p-6">
               <p className="text-foreground-secondary">
-                Sei sicuro di voler eliminare l'utente <strong>{getUserDisplayName(userToDelete)}</strong>?
+                Sei sicuro di voler eliminare l&apos;utente <strong>{getUserDisplayName(userToDelete)}</strong>?
                 Questa azione non può essere annullata.
               </p>
             </div>

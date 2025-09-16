@@ -22,7 +22,7 @@ const footerLinks = {
   supporto: [
     { name: 'Come Funziona', href: '/come-funziona' },
     { name: 'Domande Frequenti', href: '/faq' },
-    { name: 'Contatti', href: '/contatti' },
+    { name: 'Contatti', href: '/contact' },
     { name: 'Supporto Tecnico', href: '/supporto' }
   ],
   legale: [

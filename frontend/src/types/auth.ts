@@ -1,30 +1,25 @@
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'student' | 'tutor' | 'admin';
-  created_at: string;
-  updated_at: string;
-}
+// ✅ CLEANUP SUCCESS: Replaced with auto-generated types from backend!
+import type { User, Token, LoginForm, UserCreate } from './shared';
+
+// ✅ Using backend-generated types - no more duplication
+export type { User };
 
 export interface LoginCredentials {
   email: string;
   password: string;
 }
 
-export interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-  role: 'student' | 'tutor';
-}
+// ✅ DEPRECATED: Use backend LoginForm instead
+export type LoginData = LoginForm;
 
-export interface AuthResponse {
-  access_token: string;
-  refresh_token?: string;
+// ✅ DEPRECATED: Use backend UserCreate instead  
+export type RegisterData = UserCreate;
+
+// ✅ Using backend Token schema
+export type AuthResponse = Token & {
   user: User;
   expires_in: number;
-}
+};
 
 export interface AuthState {
   user: User | null;

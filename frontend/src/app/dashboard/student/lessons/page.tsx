@@ -45,11 +45,54 @@ export default function LessonsPage() {
         
         console.log('🔍 Fetching upcoming lessons from backend...')
         
-        // Implementazione API upcoming lessons in attesa di backend endpoint
-        // const lessons = await lessonService.getUpcomingLessons()
-        
-        // Per ora impostiamo array vuoto finché non implementiamo il backend
-        setLessons([])
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          console.warn('⚠️ No token found, user not authenticated')
+          setLessons([])
+          return
+        }
+
+        // Recupera le lezioni future dall'API bookings
+        const response = await fetch('http://localhost:8000/api/bookings/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (response.ok) {
+          const bookings = await response.json()
+          console.log('📅 Bookings fetched:', bookings)
+          
+          // Filtra solo le lezioni future e trasforma i dati
+          const now = new Date()
+          const futureBookings = bookings.filter((booking: any) => {
+            const lessonDateTime = new Date(`${booking.slot?.date}T${booking.slot?.start_time}`)
+            return lessonDateTime >= now
+          })
+          
+          const transformedLessons: Lesson[] = futureBookings.map((booking: any) => ({
+            id: booking.id.toString(),
+            subject: booking.slot?.subject || 'Materia non specificata',
+            tutorName: booking.slot?.tutor?.full_name || 'Tutor sconosciuto',
+            date: booking.slot?.date || new Date().toISOString().split('T')[0],
+            startTime: booking.slot?.start_time || '00:00',
+            endTime: booking.slot?.end_time || '01:00',
+            duration: 60, // Default duration
+            location: booking.slot?.location || 'Online',
+            type: booking.slot?.location === 'Online' ? 'online' : 'in_person',
+            status: booking.status === 'confirmed' ? 'confirmed' : 'pending',
+            meetingLink: booking.slot?.location === 'Online' ? 'https://meet.google.com/placeholder' : undefined,
+            notes: undefined,
+            packageName: undefined, // Da collegare con packages
+            price: 50 // Default price, da implementare con pricing
+          }))
+          
+          setLessons(transformedLessons)
+        } else {
+          console.error('❌ Failed to fetch bookings:', response.status)
+          setLessons([])
+        }
         
       } catch (err) {
         console.error('❌ Error fetching upcoming lessons:', err)

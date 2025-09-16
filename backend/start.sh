@@ -42,6 +42,8 @@ if [ -f migrations/versions/000_squashed_initial.py ]; then
   psql -h db -U tutoring -d tutoring -c "ALTER TABLE packages ADD COLUMN IF NOT EXISTS created_at TIMESTAMP;" || true
   psql -h db -U tutoring -d tutoring -c "ALTER TABLE packages ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;" || true
   psql -h db -U tutoring -d tutoring -c "ALTER TABLE admin_package_assignments ADD COLUMN IF NOT EXISTS custom_name VARCHAR(200);" || true
+  psql -h db -U tutoring -d tutoring -c "ALTER TABLE admin_package_assignments ADD COLUMN IF NOT EXISTS activated_at TIMESTAMP;" || true
+  psql -h db -U tutoring -d tutoring -c "ALTER TABLE admin_package_assignments ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP;" || true
   fi
 else
   # Fallback: apply all heads

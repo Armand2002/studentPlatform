@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
   CalendarDaysIcon, 
   ClockIcon, 
@@ -30,6 +31,7 @@ interface UpcomingLessonsWidgetProps {
 }
 
 export default function UpcomingLessonsWidget({ className }: UpcomingLessonsWidgetProps) {
+  const router = useRouter()
   const [lessons, setLessons] = useState<LessonData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,7 +46,7 @@ export default function UpcomingLessonsWidget({ className }: UpcomingLessonsWidg
         console.log('🔍 Fetching upcoming lessons from backend...')
         
         // Chiama l'endpoint per ottenere le lezioni future dello studente
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('access_token')
         if (!token) {
           console.warn('⚠️ No token found, user not authenticated')
           setLessons([])
@@ -309,10 +311,16 @@ export default function UpcomingLessonsWidget({ className }: UpcomingLessonsWidg
       {/* Quick Actions */}
       <div className="mt-6 pt-4 border-t border-border">
         <div className="flex gap-2">
-          <button className="flex-1 px-3 py-2 text-xs font-medium text-primary border border-primary/20 rounded-md hover:bg-primary/10 transition-colors">
+          <button 
+            onClick={() => router.push('/dashboard/student/booking' as any)}
+            className="flex-1 px-3 py-2 text-xs font-medium text-primary border border-primary/20 rounded-md hover:bg-primary/10 transition-colors"
+          >
             Prenota Lezione
           </button>
-          <button className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors">
+          <button 
+            onClick={() => router.push('/dashboard/student/calendar' as any)}
+            className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors"
+          >
             Vedi Calendario
           </button>
         </div>

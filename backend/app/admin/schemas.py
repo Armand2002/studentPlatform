@@ -54,6 +54,8 @@ class AdminPackageAssignment(AdminPackageAssignmentBase):
     status: PackageAssignmentStatusEnum
     hours_used: int
     hours_remaining: int
+    activated_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
     assigned_by_admin_id: int
     created_at: datetime
     updated_at: datetime

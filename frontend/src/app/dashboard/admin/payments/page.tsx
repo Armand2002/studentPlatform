@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 
 import { useState, useEffect } from 'react'
 import { 
@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline'
 import RequireAuth from '@/components/auth/RequireAuth'
 import { useAuth } from '@/contexts/AuthContext'
+import { api } from '@/lib/api'
 
 interface Payment {
   id: number
@@ -80,26 +81,12 @@ export default function PaymentsPage() {
   const fetchPayments = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('authToken')
-      
-      // Fetch payments from admin endpoint
-      const response = await fetch('/api/proxy/payments/', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Fetched payments:', data)
-        setPayments(data)
-        calculateStats(data)
-      } else {
-        console.error('Failed to fetch payments:', response.status)
-        setPayments([])
-        calculateStats([])
-      }
+      // Use centralized api client which handles auth/refresh
+      const res = await api.get('/api/payments')
+      const data = res.data || []
+      console.log('Fetched payments:', data)
+      setPayments(data)
+      calculateStats(data)
     } catch (error) {
       console.error('Error fetching payments:', error)
       setPayments([])

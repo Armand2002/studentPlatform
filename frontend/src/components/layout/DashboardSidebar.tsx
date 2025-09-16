@@ -51,13 +51,13 @@ const tutorNavigation = [
 
 const adminNavigation = [
   { name: 'Dashboard', href: '/dashboard/admin', icon: HomeIcon },
-  { name: 'Utenti', href: '/dashboard/admin/users', icon: UserGroupIcon },
-  { name: 'Approvazioni', href: '/dashboard/admin/approvals', icon: ClockIcon },
+  // Unified user management page replaces separate 'Utenti' and 'Approvazioni' pages
+  { name: 'Gestione Utenti', href: '/dashboard/admin/user-management', icon: UserGroupIcon },
   { name: 'Assegnazioni', href: '/dashboard/admin/assignments', icon: AcademicCapIcon },
+    { name: 'Pacchetti', href: '/dashboard/admin/packages', icon: BookOpenIcon },
   { name: 'Pagamenti', href: '/dashboard/admin/payments', icon: BanknotesIcon },
-  { name: 'Reports', href: '/admin/reports', icon: ChartBarIcon },
-  { name: 'Audit Logs', href: '/admin/audit-logs', icon: DocumentTextIcon },
-  { name: 'Impostazioni', href: '/admin/settings', icon: Cog6ToothIcon },
+  { name: 'Analytics', href: '/dashboard/admin/analytics', icon: ChartBarIcon },
+  { name: 'Impostazioni', href: '/dashboard/admin/settings', icon: Cog6ToothIcon },
 ]
 
 function getNavigationForRole(role: 'student' | 'tutor' | 'admin') {
@@ -142,6 +142,7 @@ function SidebarContent({ userRole, onClose }: { userRole: 'student' | 'tutor' |
             <Link
               key={item.name}
               href={item.href as any}
+              prefetch={false}
               className={cn(
                 'group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                 isActive

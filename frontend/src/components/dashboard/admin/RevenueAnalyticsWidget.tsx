@@ -231,7 +231,7 @@ export function RevenueAnalyticsWidget() {
           </span>
         </div>
         <p className="text-xs text-green-600 mt-1">
-          Revenue in crescita del +{revenueData.growth.monthly}% rispetto al mese scorso
+          Revenue in crescita del {revenueData.growth.monthly !== null && revenueData.growth.monthly !== undefined ? `+${revenueData.growth.monthly}%` : 'N/A'} rispetto al mese scorso
         </p>
       </div>
     </Card>

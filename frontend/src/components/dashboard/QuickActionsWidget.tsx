@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { isAxiosError } from 'axios'
 import { 
@@ -90,7 +91,7 @@ const quickActions: QuickAction[] = [
     title: 'Supporto',
     description: 'Contatta il supporto tecnico',
     icon: QuestionMarkCircleIcon,
-    href: '/dashboard/student/support',
+    href: '/contact',
     color: 'text-red-600',
     bgColor: 'bg-red-500/10',
     borderColor: 'border-red-500/20'
@@ -113,6 +114,7 @@ interface QuickStats {
 }
 
 export default function QuickActionsWidget({ className }: QuickActionsWidgetProps) {
+  const router = useRouter()
   const [hoveredAction, setHoveredAction] = useState<string | null>(null)
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
   const [quickStats, setQuickStats] = useState<QuickStats>({
@@ -167,9 +169,8 @@ export default function QuickActionsWidget({ className }: QuickActionsWidgetProp
   }, [])
 
   const handleActionClick = (action: QuickAction) => {
-    // In futuro: navigazione reale
     console.log(`Navigating to: ${action.href}`)
-    // router.push(action.href)
+    router.push(action.href as any)
   }
 
   return (
@@ -327,11 +328,17 @@ export default function QuickActionsWidget({ className }: QuickActionsWidgetProp
       <div className="space-y-3">
         <h4 className="text-sm font-medium text-foreground mb-3">Altre Azioni</h4>
         <div className="flex gap-2">
-          <button className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors flex items-center justify-center gap-2">
+          <button 
+            onClick={() => router.push('/dashboard/student/chat' as any)}
+            className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors flex items-center justify-center gap-2"
+          >
             <ChatBubbleLeftRightIcon className="h-3 w-3" />
             Chat con Tutor
           </button>
-          <button className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors flex items-center justify-center gap-2">
+          <button 
+            onClick={() => router.push('/dashboard/student/settings' as any)}
+            className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors flex items-center justify-center gap-2"
+          >
             <Cog6ToothIcon className="h-3 w-3" />
             Impostazioni
           </button>
@@ -345,7 +352,10 @@ export default function QuickActionsWidget({ className }: QuickActionsWidgetProp
           <p className="text-xs text-foreground-muted mb-2">
             Hai bisogno di aiuto?
           </p>
-          <button className="text-xs text-primary hover:text-primary-600 transition-colors">
+          <button 
+            onClick={() => router.push('/help' as any)}
+            className="text-xs text-primary hover:text-primary-600 transition-colors"
+          >
             Consulta la guida
           </button>
         </div>

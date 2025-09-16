@@ -68,18 +68,17 @@ const nextConfig = {
 	},
 	// Add rewrites to potentially help with CORS issues during development
 	async rewrites() {
-		return [
-			{
-				source: '/api/:path*',
-				destination: 'http://localhost:8000/api/:path*',
-				has: [
-					{
-						type: 'header',
-						key: 'x-development-proxy'
-					}
-				]
-			}
-		]
+		// During local development, proxy any /api/* calls to the backend running on port 8000.
+		// Keep the previous header-based proxy option commented for reference.
+		if (process.env.NODE_ENV !== 'production') {
+			return [
+				{
+					source: '/api/:path*',
+					destination: 'http://localhost:8000/api/:path*',
+				},
+			]
+		}
+		return []
 	}
 };
 

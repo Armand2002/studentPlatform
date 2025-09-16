@@ -15,22 +15,24 @@ import {
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
 import RequireAuth from '@/components/auth/RequireAuth'
+import { api } from '@/lib/api'
 
 interface UserProfile {
-  id: string
-  firstName: string
+  id: number
+  name: string  // first_name from API
   lastName: string
   email: string
   phone?: string
   dateOfBirth?: string
   address?: string
   city?: string
-  country: string
+  country?: string
   avatar?: string
   bio?: string
-  subjects: string[]
+  subjects?: string[]
   grade?: string
   school?: string
+  preferences?: NotificationSettings
 }
 
 interface NotificationSettings {
@@ -86,15 +88,27 @@ export default function SettingsPage() {
         
         console.log('🔍 Fetching user settings from backend...')
         
-        // Implementazione API user settings in attesa di backend endpoint
-        // const [userProfile, notificationSettings, privacySettings] = await Promise.all([
-        //   userService.getProfile(),
-        //   userService.getNotificationSettings(),
-        //   userService.getPrivacySettings()
-        // ])
+        // ✅ IMPLEMENTATO: Fetch real user profile from backend
+        const userResponse = await api.get('/api/users/me/student')
         
-        // TODO: Implementare API backend per profilo utente
-        setProfile(null)
+        setProfile({
+          id: userResponse.data.user_id,
+          name: userResponse.data.first_name,
+          lastName: userResponse.data.last_name,
+          email: userResponse.data.user?.email || '',
+          phone: userResponse.data.phone_number || '',
+          school: userResponse.data.institute || '',
+          bio: '',
+          preferences: {
+            emailNotifications: true,
+            smsNotifications: false,
+            pushNotifications: true,
+            lessonReminders: true,
+            packageUpdates: true,
+            promotions: false,
+            weeklyDigest: true
+          }
+        })
         
       } catch (err) {
         console.error('❌ Error fetching settings:', err)
@@ -110,9 +124,19 @@ export default function SettingsPage() {
     try {
       setSaving(true)
       console.log('💾 Saving profile updates...', updatedProfile)
-      // await userService.updateProfile(updatedProfile)
-      // Simula salvataggio
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // ✅ IMPLEMENTATO: Update profile via backend API
+      if (profile) {
+        await api.put(`/api/users/students/${profile.id}`, {
+          first_name: updatedProfile.name,
+          last_name: updatedProfile.lastName,
+          phone_number: updatedProfile.phone,
+          institute: updatedProfile.school
+        })
+        
+        // Update local state
+        setProfile(prev => prev ? { ...prev, ...updatedProfile } : null)
+      }
     } catch (err) {
       console.error('❌ Error saving profile:', err)
     } finally {
@@ -195,7 +219,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Impostazioni</h1>
           <p className="text-foreground-muted">
-            Gestisci il tuo profilo e le preferenze dell'account
+            Gestisci il tuo profilo e le preferenze dell&apos;account
           </p>
         </div>
 
@@ -235,8 +259,8 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="text"
-                        value={profile?.firstName || ''}
-                        onChange={(e) => profile && setProfile({ ...profile, firstName: e.target.value })}
+                        value={profile?.name || ''}
+                        onChange={(e) => profile && setProfile({ ...profile, name: e.target.value })}
                         className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-primary"
                         placeholder="Il tuo nome"
                       />

@@ -125,27 +125,27 @@ export default function MonthlyCalendarWidget() {
   }, [selectedTutorId, selectedDate])
 
   async function createBooking() {
+    // ✅ CLEANUP: Simplified booking creation logic
     if (!student || !selectedSlotId || !selectedPurchaseId || !daySlots) return
     const slot = daySlots.find((s) => s.id === selectedSlotId)
     if (!slot) return
+    
     setBookingLoading(true)
     setBookingSuccess(null)
     try {
-      const start = new Date(slot.start_time)
-      const end = new Date(slot.end_time)
-      const durationHours = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60)))
+      // ✅ CLEANUP: Use slot times directly - backend auto-calculates duration
       await api.post('/api/bookings', {
         student_id: student.id,
         tutor_id: slot.tutor_id,
         package_purchase_id: selectedPurchaseId,
-        start_time: start.toISOString(),
-        end_time: end.toISOString(),
-        duration_hours: durationHours,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
         subject: subject || 'Lezione',
+        // ❌ REMOVED: Manual duration calculation - backend handles it
       })
       setBookingSuccess('Prenotazione creata')
-      // Offer ICS
-      downloadIcs('lezione.ics', subject || 'Lezione', start.toISOString(), end.toISOString())
+      // ✅ CLEANUP: Use slot times for ICS download
+      downloadIcs('lezione.ics', subject || 'Lezione', slot.start_time, slot.end_time)
       await loadDaySlots()
       setSelectedSlotId(null)
       setSubject('')

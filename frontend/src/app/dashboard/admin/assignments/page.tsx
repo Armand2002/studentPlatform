@@ -41,6 +41,8 @@ interface Assignment {
   }
   status: 'active' | 'completed' | 'suspended' | 'pending'
   createdAt: string
+  activatedAt?: string | null
+  completedAt?: string | null
   assignedBy: string
   notes?: string
 }
@@ -104,6 +106,9 @@ export default function AssignmentsPage() {
         },
         status: assignment.status || 'active',
         createdAt: assignment.created_at,
+        // optional timestamps
+        activatedAt: assignment.activated_at || null,
+        completedAt: assignment.completed_at || null,
         assignedBy: assignment.assigned_by_admin?.email || 'Sistema',
         notes: assignment.notes
       }))
@@ -272,6 +277,16 @@ export default function AssignmentsPage() {
                     <Badge className={getStatusColor(assignment.status)}>
                       {assignment.status}
                     </Badge>
+                    {assignment.activatedAt && (
+                      <div className="text-xs text-foreground-muted ml-2">
+                        Attivata il {new Date(assignment.activatedAt).toLocaleDateString('it-IT')}
+                      </div>
+                    )}
+                    {assignment.completedAt && (
+                      <div className="text-xs text-foreground-muted ml-2">
+                        Completata il {new Date(assignment.completedAt).toLocaleDateString('it-IT')}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
