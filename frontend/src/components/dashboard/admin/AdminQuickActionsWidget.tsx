@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { 
@@ -9,8 +10,6 @@ import {
   FileText, 
   AlertCircle, 
   Shield, 
-  Download,
-  Mail,
   Bell,
   Users,
   Package,
@@ -36,23 +35,23 @@ interface ActionButtonProps {
 }
 
 function ActionButton({ action }: ActionButtonProps) {
-  const { title, description, icon: Icon, color, badge, urgent, onClick } = action;
+  const { title, description, icon: Icon, badge, urgent, onClick } = action;
   
   return (
     <button
       onClick={onClick}
-      className={`w-full p-4 text-left border rounded-lg hover:shadow-md transition-all duration-200 ${
-        urgent ? 'border-red-200 bg-red-50 hover:bg-red-100' : 'border-border bg-white hover:bg-background-secondary/50'
-      }`}
+      className="w-full p-4 text-left border border-border rounded-lg hover:shadow-md transition-all duration-200 bg-card hover:bg-background-secondary"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3 flex-1">
-          <div className={`w-10 h-10 rounded-lg ${color} flex items-center justify-center flex-shrink-0`}>
-            <Icon className="w-5 h-5 text-white" />
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+            urgent ? 'bg-red-100' : 'bg-blue-100'
+          }`}>
+            <Icon className={`w-5 h-5 ${urgent ? 'text-red-600' : 'text-blue-600'}`} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className={`font-medium ${urgent ? 'text-red-900' : 'text-foreground'}`}>
+              <h4 className="font-medium text-foreground">
                 {title}
               </h4>
               {badge && (
@@ -61,7 +60,7 @@ function ActionButton({ action }: ActionButtonProps) {
                 </Badge>
               )}
             </div>
-            <p className={`text-sm mt-1 ${urgent ? 'text-red-600' : 'text-foreground-secondary'}`}>
+            <p className="text-sm mt-1 text-foreground-secondary">
               {description}
             </p>
           </div>
@@ -76,6 +75,7 @@ function ActionButton({ action }: ActionButtonProps) {
 
 export function AdminQuickActionsWidget() {
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -93,17 +93,7 @@ export function AdminQuickActionsWidget() {
       color: 'bg-blue-500',
       badge: '3',
       urgent: true,
-      onClick: () => console.log('Navigate to approvals'),
-    },
-    {
-      id: 'system-alerts',
-      title: 'Alert di Sistema',
-      description: 'Problemi che richiedono attenzione',
-      icon: AlertCircle,
-      color: 'bg-red-500',
-      badge: '2',
-      urgent: true,
-      onClick: () => console.log('View system alerts'),
+      onClick: () => router.push('/dashboard/admin/user-management?tab=approvals'),
     },
     {
       id: 'user-management',
@@ -111,80 +101,64 @@ export function AdminQuickActionsWidget() {
       description: 'Visualizza e modifica profili utenti',
       icon: Users,
       color: 'bg-green-500',
-      onClick: () => console.log('Navigate to user management'),
+      onClick: () => router.push('/dashboard/admin/user-management'),
+    },
+    {
+      id: 'package-management',
+      title: 'Gestisci Pacchetti',
+      description: 'Crea e modifica pacchetti',
+      icon: Package,
+      color: 'bg-purple-500',
+      onClick: () => router.push('/dashboard/admin/packages'),
     },
     {
       id: 'package-assignments',
-      title: 'Assegna Pacchetti',
+      title: 'Assegnazioni',
       description: 'Assegna pacchetti a studenti',
-      icon: Package,
-      color: 'bg-purple-500',
-      onClick: () => console.log('Navigate to package assignments'),
+      icon: FileText,
+      color: 'bg-blue-500',
+      onClick: () => router.push('/dashboard/admin/assignments'),
     },
     {
       id: 'payment-verification',
-      title: 'Verifica Pagamenti',
-      description: 'Controlla pagamenti offline',
+      title: 'Pagamenti',
+      description: 'Gestisci pagamenti e fatturazione',
       icon: CreditCard,
       color: 'bg-orange-500',
       badge: '5',
-      onClick: () => console.log('Navigate to payment verification'),
+      onClick: () => router.push('/dashboard/admin/payments'),
     },
     {
-      id: 'generate-reports',
-      title: 'Genera Report',
-      description: 'Export dati e statistiche',
+      id: 'lessons-management',
+      title: 'Gestisci Lezioni',
+      description: 'Monitora e gestisci le lezioni',
+      icon: Bell,
+      color: 'bg-green-500',
+      onClick: () => router.push('/dashboard/admin/lessons'),
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics',
+      description: 'Visualizza report e statistiche',
       icon: BarChart3,
       color: 'bg-indigo-500',
-      onClick: () => console.log('Generate reports'),
-    },
-    {
-      id: 'send-notifications',
-      title: 'Invia Notifiche',
-      description: 'Comunica con utenti della piattaforma',
-      icon: Mail,
-      color: 'bg-teal-500',
-      onClick: () => console.log('Send notifications'),
+      onClick: () => router.push('/dashboard/admin/analytics'),
     },
     {
       id: 'system-settings',
-      title: 'Impostazioni Sistema',
+      title: 'Impostazioni',
       description: 'Configura parametri piattaforma',
       icon: Settings,
       color: 'bg-gray-500',
-      onClick: () => console.log('Navigate to system settings'),
+      onClick: () => router.push('/dashboard/admin/settings'),
     },
     {
-      id: 'backup-data',
-      title: 'Backup Database',
-      description: 'Esegui backup dei dati',
-      icon: Download,
-      color: 'bg-cyan-500',
-      onClick: () => console.log('Start database backup'),
-    },
-    {
-      id: 'security-audit',
-      title: 'Audit Sicurezza',
-      description: 'Verifica log e accessi',
+      id: 'audit-logs',
+      title: 'Log Audit',
+      description: 'Visualizza log di sistema',
       icon: Shield,
       color: 'bg-red-600',
-      onClick: () => console.log('Navigate to security audit'),
-    },
-    {
-      id: 'performance-monitor',
-      title: 'Monitor Performance',
-      description: 'Controlla prestazioni sistema',
-      icon: Zap,
-      color: 'bg-yellow-500',
-      onClick: () => console.log('View performance dashboard'),
-    },
-    {
-      id: 'activity-logs',
-      title: 'Log Attività',
-      description: 'Visualizza cronologia azioni',
-      icon: FileText,
-      color: 'bg-slate-500',
-      onClick: () => console.log('View activity logs'),
+      onClick: () => router.push('/dashboard/admin/audit-logs'),
     },
   ];
 
@@ -249,15 +223,15 @@ export function AdminQuickActionsWidget() {
       <div className="mt-6 pt-6 border-t border-border">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold text-primary">{urgentActions.length}</p>
+            <p className="text-2xl font-bold text-red-600">{urgentActions.length}</p>
             <p className="text-xs text-foreground-secondary">Urgenti</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-secondary">{normalActions.length}</p>
+            <p className="text-2xl font-bold text-blue-600">{normalActions.length}</p>
             <p className="text-xs text-foreground-secondary">Disponibili</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-green-500">{quickActions.length}</p>
+            <p className="text-2xl font-bold text-green-600">{quickActions.length}</p>
             <p className="text-xs text-foreground-secondary">Totali</p>
           </div>
         </div>

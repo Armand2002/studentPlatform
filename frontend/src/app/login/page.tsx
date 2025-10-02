@@ -95,6 +95,17 @@ export default function LoginPage() {
                   onChange={(e)=>setPassword(e.target.value)} 
                 />
               </div>
+              
+              {/* Forgot Password Link */}
+              <div className="text-right">
+                <a 
+                  href="/forgot-password" 
+                  className="text-sm text-primary hover:text-primary/80 transition-colors"
+                >
+                  Password dimenticata?
+                </a>
+              </div>
+              
               {error && <p className="text-sm text-red-500">{error}</p>}
             <button disabled={loading} className="w-full h-11 sm:h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 font-medium transition-colors">{loading ? 'Attendere…' : 'Accedi'}</button>
             </form>

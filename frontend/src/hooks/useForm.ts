@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * ✅ CLEANUP: Centralized Form State Management
  * Eliminates form handling duplication across 12+ components

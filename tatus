@@ -1,0 +1,38 @@
+[33mcommit 1ad9dc98b3ee0095647116b6fb521f4f3252c303[m
+Author: Armand2002 <80708875+Armand2002@users.noreply.github.com>
+Date:   Mon Sep 1 21:23:14 2025 +0200
+
+    pagine aggiunte e rimozioni completate
+
+.gitignore
+BACKEND_ROADMAP.md
+DOCUMENTATION.md
+PLATFORM_FEATURES.md
+README.md
+backend/.env.example
+backend/app/core/models.py
+backend/app/main.py
+backend/app/users/models.py
+backend/docker-compose.yml
+backend/migrations/env.py
+backend/requirements/base.txt
+backend/requirements/production.txt
+backend_struct.md
+docs/backend_changes.md
+docs/google_drive_integration.md
+docs/header_materials_implementation.md
+docs/index.md
+docs/sendgrid_setup.md
+frontend/.env.local
+frontend/public/sw.js
+frontend/src/app/dashboard/tutor/page.tsx
+frontend/src/app/doposcuola/page.tsx
+frontend/src/app/preparazione-test/page.tsx
+frontend/src/app/ripetizioni/page.tsx
+frontend/src/app/test-forze-ordine/page.tsx
+frontend/src/app/test-universitari/page.tsx
+frontend/src/components/layout/DashboardSidebar.tsx
+frontend/src/components/layout/Header.tsx
+frontend/src/components/materials/MaterialsLink.tsx
+roadmap_finale.md
+scripts/smoke-tutor.ps1

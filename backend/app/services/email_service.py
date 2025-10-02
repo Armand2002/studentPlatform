@@ -39,7 +39,8 @@ class EmailService:
             'booking_cancelled': os.getenv('SENDGRID_TEMPLATE_BOOKING_CANCELLED', 'd-booking-cancelled'), 
             'booking_rescheduled': os.getenv('SENDGRID_TEMPLATE_BOOKING_RESCHEDULED', 'd-booking-rescheduled'),
             'package_assigned': os.getenv('SENDGRID_TEMPLATE_PACKAGE_ASSIGNED', 'd-package-assigned'),
-            'package_expiring': os.getenv('SENDGRID_TEMPLATE_PACKAGE_EXPIRING', 'd-package-expiring')
+            'package_expiring': os.getenv('SENDGRID_TEMPLATE_PACKAGE_EXPIRING', 'd-package-expiring'),
+            'password_reset': os.getenv('SENDGRID_TEMPLATE_PASSWORD_RESET', 'd-password-reset')
         }
         
         # Email mittente
@@ -253,9 +254,45 @@ class EmailService:
             print(f"❌ SendGrid send error: {e}")
             return False
 
+    async def send_password_reset(self, user_email: str, user_name: str, reset_token: str) -> bool:
+        """🔑 Send password reset email"""
+        try:
+            # Costruisci il link di reset (da configurare con URL frontend)
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            reset_link = f"{frontend_url}/reset-password?token={reset_token}"
+            
+            template_data = {
+                'user_name': user_name,
+                'reset_link': reset_link,
+                'expires_in': '1 ora',
+                'platform_name': 'Tutoring Platform',
+                'support_email': 'support@tutoring-platform.com'
+            }
+            
+            await self._send_email(
+                to_email=user_email,
+                to_name=user_name,
+                template_id=self.templates['password_reset'],
+                template_data=template_data,
+                subject="🔑 Reset della tua password - Tutoring Platform"
+            )
+            
+            print(f"✅ Password reset email sent to {user_email}")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error sending password reset email: {e}")
+            return False
 
-# Instance globale del servizio
-email_service = EmailService()
+
+# Instance globale del servizio (lazy initialization)
+_email_service = None
+
+def get_email_service():
+    global _email_service
+    if _email_service is None:
+        _email_service = EmailService()
+    return _email_service
 
 
 # ================================
@@ -266,21 +303,25 @@ async def trigger_booking_confirmed(booking_id: int, db: Session):
     """🎯 Trigger per conferma booking"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if booking:
-        await email_service.send_booking_confirmed(booking, db)
+        await get_email_service().send_booking_confirmed(booking, db)
 
 async def trigger_booking_cancelled(booking_id: int, db: Session, reason: str = ""):
     """🎯 Trigger per cancellazione booking"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if booking:
-        await email_service.send_booking_cancelled(booking, db, reason)
+        await get_email_service().send_booking_cancelled(booking, db, reason)
 
 async def trigger_booking_rescheduled(booking_id: int, db: Session, 
                                     old_start_time: datetime, reason: str = ""):
     """🎯 Trigger per spostamento booking"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if booking:
-        await email_service.send_booking_rescheduled(booking, db, old_start_time, reason)
+        await get_email_service().send_booking_rescheduled(booking, db, old_start_time, reason)
 
 async def trigger_package_assigned(assignment_id: int, db: Session):
     """🎯 Trigger per assegnazione pacchetto"""
-    await email_service.send_package_assigned(assignment_id, db)
+    await get_email_service().send_package_assigned(assignment_id, db)
+
+async def trigger_password_reset(user_email: str, user_name: str, reset_token: str):
+    """🎯 Trigger per password reset"""
+    await get_email_service().send_password_reset(user_email, user_name, reset_token)

@@ -40,7 +40,7 @@ const quickActions: QuickAction[] = [
     title: 'Prenota Lezione',
     description: 'Prenota una nuova lezione con i tuoi tutor',
     icon: PlusIcon,
-    href: '/dashboard/student/booking',
+    href: '/dashboard/student/lessons',
     color: 'text-green-600',
     bgColor: 'bg-green-500/10',
     borderColor: 'border-green-500/20',
@@ -81,7 +81,7 @@ const quickActions: QuickAction[] = [
     title: 'Richiedi Materiale',
     description: 'Chiedi materiali di studio specifici',
     icon: DocumentTextIcon,
-    href: '/dashboard/student/materials/request',
+    href: 'https://drive.google.com/drive/folders/1Sqs2GpEk8eVTjcvfQcA5rOxmxIujxNdI?usp=drive_link',
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-500/10',
     borderColor: 'border-indigo-500/20'
@@ -170,6 +170,20 @@ export default function QuickActionsWidget({ className }: QuickActionsWidgetProp
 
   const handleActionClick = (action: QuickAction) => {
     console.log(`Navigating to: ${action.href}`)
+    
+    // Handle external links (Google Drive)
+    if (action.href.startsWith('http')) {
+      window.open(action.href, '_blank', 'noopener,noreferrer')
+      return
+    }
+    
+    // Handle special booking action - open lessons page with booking tab
+    if (action.id === 'book-lesson') {
+      router.push('/dashboard/student/lessons?tab=booking' as any)
+      return
+    }
+    
+    // Handle internal navigation
     router.push(action.href as any)
   }
 

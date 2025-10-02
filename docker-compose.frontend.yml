@@ -18,7 +18,7 @@ services:
 
   backend:
     build:
-      context: ./studentPlatform/backend
+      context: ./backend
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
@@ -27,7 +27,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./studentPlatform/backend:/app
+      - ./backend:/app
 
   db:
     image: postgres:15

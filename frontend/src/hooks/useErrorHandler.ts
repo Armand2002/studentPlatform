@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * ✅ CLEANUP: Centralized Error Handling
  * Eliminates error handling duplication across 15+ components

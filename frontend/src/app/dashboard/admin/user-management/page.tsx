@@ -358,7 +358,7 @@ export default function UserManagementPage() {
         <div className="flex gap-3">
           <button
             onClick={() => exportUsers()}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors"
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
             Esporta Tutti
@@ -367,7 +367,7 @@ export default function UserManagementPage() {
           {selectedUsers.length > 0 && (
             <button
               onClick={() => setShowBulkActions(!showBulkActions)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors"
             >
               Azioni Multiple ({selectedUsers.length})
             </button>
@@ -389,7 +389,7 @@ export default function UserManagementPage() {
               }`}
             >
               {tab.label}
-              <span className="ml-2 bg-gray-100 text-foreground py-0.5 px-2.5 rounded-full text-xs">
+              <span className="ml-2 bg-gray-800 text-white py-0.5 px-2.5 rounded-full text-xs">
                 {tab.count}
               </span>
             </button>
@@ -409,37 +409,37 @@ export default function UserManagementPage() {
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground bg-background"
           >
-            <option value="">Tutti i ruoli</option>
-            <option value="student">Studenti</option>
-            <option value="tutor">Tutor</option>
-            <option value="admin">Admin</option>
+            <option value="" className="text-foreground bg-background">Tutti i ruoli</option>
+            <option value="student" className="text-foreground bg-background">Studenti</option>
+            <option value="tutor" className="text-foreground bg-background">Tutor</option>
+            <option value="admin" className="text-foreground bg-background">Admin</option>
           </select>
 
           {/* Status Filter */}
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground bg-background"
           >
-            <option value="">Tutti gli stati</option>
-            <option value="verified">Verificati</option>
-            <option value="unverified">Non verificati</option>
-            <option value="active">Attivi</option>
-            <option value="inactive">Inattivi</option>
+            <option value="" className="text-foreground bg-background">Tutti gli stati</option>
+            <option value="verified" className="text-foreground bg-background">Verificati</option>
+            <option value="unverified" className="text-foreground bg-background">Non verificati</option>
+            <option value="active" className="text-foreground bg-background">Attivi</option>
+            <option value="inactive" className="text-foreground bg-background">Inattivi</option>
           </select>
 
           {/* Page Size */}
           <select
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
-            className="px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground bg-background"
           >
-            <option value={10}>10 per pagina</option>
-            <option value={25}>25 per pagina</option>
-            <option value={50}>50 per pagina</option>
-            <option value={100}>100 per pagina</option>
+            <option value={10} className="text-foreground bg-background">10 per pagina</option>
+            <option value={25} className="text-foreground bg-background">25 per pagina</option>
+            <option value={50} className="text-foreground bg-background">50 per pagina</option>
+            <option value={100} className="text-foreground bg-background">100 per pagina</option>
           </select>
         </div>
       </div>
@@ -453,14 +453,14 @@ export default function UserManagementPage() {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => handleBulkAction({ type: 'approve', userIds: selectedUsers })}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors"
             >
               <CheckCircleIcon className="h-4 w-4" />
               Approva Tutti
             </button>
             <button
               onClick={() => handleBulkAction({ type: 'reject', userIds: selectedUsers, reason: 'Azione multipla admin' })}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors"
             >
               <XCircleIcon className="h-4 w-4" />
               Rifiuta Tutti
@@ -652,7 +652,7 @@ export default function UserManagementPage() {
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 text-sm font-medium text-foreground-secondary bg-background-secondary border border-border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-gray-700 rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Precedente
           </button>
@@ -667,8 +667,8 @@ export default function UserManagementPage() {
                   onClick={() => setCurrentPage(page)}
                   className={`px-3 py-2 text-sm font-medium rounded-md ${
                     currentPage === page
-                      ? 'bg-blue-600 text-white'
-                      : 'text-foreground-secondary bg-background-secondary border border-border hover:bg-gray-50'
+                      ? 'bg-gray-900 text-white'
+                      : 'text-white bg-gray-800 border border-gray-700 hover:bg-gray-900'
                   }`}
                 >
                   {page}
@@ -680,7 +680,7 @@ export default function UserManagementPage() {
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 text-sm font-medium text-foreground-secondary bg-background-secondary border border-border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-gray-700 rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Successivo
           </button>
@@ -774,7 +774,7 @@ export default function UserManagementPage() {
                       handleApproveUser(selectedUser.id);
                       setShowUserModal(false);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors"
                   >
                     <CheckCircleIcon className="h-4 w-4" />
                     Approva
@@ -782,7 +782,7 @@ export default function UserManagementPage() {
                 )}
                 <button
                   onClick={() => setShowUserModal(false)}
-                  className="px-4 py-2 text-foreground-secondary bg-background-secondary border border-border rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-white bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-900"
                 >
                   Chiudi
                 </button>
@@ -811,13 +811,13 @@ export default function UserManagementPage() {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="px-4 py-2 text-foreground-secondary bg-background-secondary border border-border rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-white bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-900"
                 >
                   Annulla
                 </button>
                 <button
                   onClick={() => handleDeleteUser(userToDelete.id, userToDelete.role as 'student' | 'tutor')}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors"
                 >
                   <TrashIcon className="h-4 w-4" />
                   Elimina

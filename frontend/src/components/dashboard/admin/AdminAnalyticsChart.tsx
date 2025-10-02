@@ -100,7 +100,7 @@ export function AdminAnalyticsChart() {
       <Card className="p-6">
         <div className="animate-pulse">
           <div className="h-6 bg-background-secondary rounded w-1/3 mb-4"></div>
-          <div className="h-64 bg-background-secondary rounded"></div>
+          <div className="h-96 bg-background-secondary rounded"></div>
         </div>
       </Card>
     );
@@ -276,7 +276,7 @@ export function AdminAnalyticsChart() {
         </div>
       </div>
 
-      <div className="h-64">
+      <div className="h-96">
         <ChartComponent data={chartData} options={options} />
       </div>
 

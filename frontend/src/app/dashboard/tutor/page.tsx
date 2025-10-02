@@ -7,12 +7,12 @@ import EarningsWidget from '@/components/dashboard/tutor/EarningsWidget'
 import StudentsWidget from '@/components/dashboard/tutor/StudentsWidget'
 import AvailabilityWidget from '@/components/dashboard/tutor/AvailabilityWidget'
 import MaterialsLink from '@/components/materials/MaterialsLink'
-import PerformanceWidget from '@/components/dashboard/tutor/PerformanceWidget'
 import { RevenueChart } from '@/components/dashboard/tutor/RevenueChart'
 import { EarningsBreakdown } from '@/components/dashboard/tutor/EarningsBreakdown'
 import { PerformanceMetrics } from '@/components/dashboard/tutor/PerformanceMetrics'
 import { StudentList } from '@/components/dashboard/tutor/StudentList'
 import { LessonCalendar } from '@/components/dashboard/tutor/LessonCalendar'
+import PackageRequestWidget from '@/components/dashboard/tutor/PackageRequestWidget'
 
 export default function TutorDashboardPage() {
   const { user } = useAuth()
@@ -62,7 +62,7 @@ export default function TutorDashboardPage() {
               <h2 className="text-lg font-semibold text-foreground">Materiali Didattici</h2>
               <MaterialsLink variant="widget" />
             </div>
-            <PerformanceWidget />
+            <PackageRequestWidget />
           </div>
 
           {/* Calendar and actions */}

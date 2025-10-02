@@ -40,6 +40,14 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: Optional[str] = None
     EMAIL_FROM: Optional[str] = None
     
+    # SendGrid
+    SENDGRID_API_KEY: Optional[str] = None
+    SENDGRID_FROM_EMAIL: Optional[str] = None
+    SENDGRID_FROM_NAME: Optional[str] = None
+    
+    # Frontend
+    FRONTEND_URL: str = "http://localhost:3000"
+    
     # Payments (Stripe)
     STRIPE_PUBLIC_KEY: Optional[str] = None
     STRIPE_SECRET_KEY: Optional[str] = None

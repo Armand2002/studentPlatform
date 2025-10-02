@@ -8,6 +8,80 @@ from app.users.models import Tutor
 from typing import List, Optional
 from datetime import datetime, date
 
+class PackageRequestService:
+    """Service for package requests management"""
+    
+    @staticmethod
+    async def create_package_request(db: Session, tutor_id: int, request_data: dict) -> models.PackageRequest:
+        """Create a new package request from tutor"""
+        request = models.PackageRequest(
+            tutor_id=tutor_id,
+            requested_name=request_data["name"],
+            requested_subject=request_data["subject"],
+            requested_description=request_data["description"],
+            requested_total_hours=request_data["total_hours"],
+            status=models.PackageRequestStatus.PENDING
+        )
+        db.add(request)
+        db.commit()
+        db.refresh(request)
+        return request
+    
+    @staticmethod
+    async def get_pending_requests(db: Session) -> List[models.PackageRequest]:
+        """Get all pending package requests"""
+        return db.query(models.PackageRequest).filter(
+            models.PackageRequest.status == models.PackageRequestStatus.PENDING
+        ).order_by(models.PackageRequest.created_at.desc()).all()
+    
+    @staticmethod
+    async def approve_request(db: Session, request_id: int, admin_id: int) -> models.PackageRequest:
+        """Approve a package request and create the package"""
+        request = db.query(models.PackageRequest).filter(models.PackageRequest.id == request_id).first()
+        if not request:
+            raise ValueError("Package request not found")
+        
+        if request.status != models.PackageRequestStatus.PENDING:
+            raise ValueError("Request is not in pending status")
+        
+        # Create the package
+        package_data = schemas.PackageCreate(
+            tutor_id=request.tutor_id,
+            name=request.requested_name,
+            description=request.requested_description,
+            total_hours=request.requested_total_hours,
+            price=0,  # Will be calculated by admin
+            subject=request.requested_subject,
+            is_active=True
+        )
+        
+        package = await PackageService.create_package(db, package_data)
+        
+        # Update request status
+        request.status = models.PackageRequestStatus.APPROVED
+        request.reviewed_by_admin_id = admin_id
+        request.review_date = datetime.utcnow()
+        request.created_package_id = package.id
+        
+        db.commit()
+        return request
+    
+    @staticmethod
+    async def reject_request(db: Session, request_id: int, admin_id: int, reason: str) -> models.PackageRequest:
+        """Reject a package request"""
+        request = db.query(models.PackageRequest).filter(models.PackageRequest.id == request_id).first()
+        if not request:
+            raise ValueError("Package request not found")
+        
+        request.status = models.PackageRequestStatus.REJECTED
+        request.reviewed_by_admin_id = admin_id
+        request.review_date = datetime.utcnow()
+        request.rejection_reason = reason
+        
+        db.commit()
+        return request
+
+
 class PackageService:
     """Service for package management"""
     
@@ -32,6 +106,21 @@ class PackageService:
     async def get_package_by_id(db: Session, package_id: int) -> Optional[models.Package]:
         """Get package by ID"""
         return db.query(models.Package).filter(models.Package.id == package_id).first()
+    
+    @staticmethod
+    async def update_package(db: Session, package_id: int, package_data: schemas.PackageUpdate) -> models.Package:
+        """Update package"""
+        package = db.query(models.Package).filter(models.Package.id == package_id).first()
+        if not package:
+            raise ValueError("Package not found")
+        
+        # Update fields
+        for field, value in package_data.dict(exclude_unset=True).items():
+            setattr(package, field, value)
+        
+        db.commit()
+        db.refresh(package)
+        return package
     
     @staticmethod
     async def get_packages_by_tutor(db: Session, tutor_id: int, skip: int = 0, limit: int = 100) -> List[models.Package]:

@@ -1,9 +1,10 @@
 """
 Packages models for tutoring platform
 """
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, Numeric, Date
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, Numeric, Date, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
+import enum
 from app.core.database import Base
 
 class Package(Base):
@@ -58,3 +59,48 @@ class PackageResourceLink(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     package = relationship("Package", back_populates="links")
+
+
+class PackageRequestStatus(enum.Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    IN_REVIEW = "in_review"
+
+
+class PackageRequest(Base):
+    """
+    Richieste di creazione pacchetti da parte dei tutor
+    Workflow: Tutor richiede → Admin approva/rifiuta → Admin crea pacchetto
+    """
+    __tablename__ = "package_requests"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    tutor_id = Column(Integer, ForeignKey("tutors.id"), nullable=False)
+    
+    # Dati richiesti dal tutor
+    requested_name = Column(String, nullable=False)
+    requested_subject = Column(String, nullable=False)
+    requested_description = Column(Text, nullable=False)
+    requested_total_hours = Column(Integer, nullable=False)
+    
+    # Gestione stato
+    status = Column(Enum(PackageRequestStatus), default=PackageRequestStatus.PENDING)
+    
+    # Admin review
+    reviewed_by_admin_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    review_date = Column(DateTime, nullable=True)
+    admin_notes = Column(Text, nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    
+    # Risultato (se approvato)
+    created_package_id = Column(Integer, ForeignKey("packages.id"), nullable=True)
+    
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    tutor = relationship("Tutor")
+    reviewed_by = relationship("User", foreign_keys=[reviewed_by_admin_id])
+    created_package = relationship("Package", foreign_keys=[created_package_id])

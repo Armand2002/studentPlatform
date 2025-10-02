@@ -170,8 +170,39 @@ def request_password_reset(db: Session, email: str):
     db.add(reset)
     db.commit()
     
-    # TODO: Send email with reset link
-    return {"message": "Password reset link sent to email"}
+    # Send email with reset link
+    try:
+        from app.services.email_service import trigger_password_reset
+        import asyncio
+        import threading
+        
+        # Get user display name
+        user_name = email.split('@')[0]  # Fallback name
+        if user.student_profile:
+            user_name = f"{user.student_profile.first_name} {user.student_profile.last_name}"
+        elif user.tutor_profile:
+            user_name = f"{user.tutor_profile.first_name} {user.tutor_profile.last_name}"
+        
+        # Trigger email in background thread (non-blocking)
+        def send_email_background():
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(trigger_password_reset(email, user_name, reset_token))
+                loop.close()
+            except Exception as e:
+                print(f"⚠️ Background email send error: {e}")
+        
+        # Start background thread
+        email_thread = threading.Thread(target=send_email_background)
+        email_thread.daemon = True
+        email_thread.start()
+        
+    except Exception as e:
+        print(f"⚠️ Error setting up password reset email: {e}")
+        # Don't fail the request if email setup fails
+    
+    return {"message": "If email exists, password reset link sent"}
 
 def reset_password(db: Session, token: str, new_password: str):
     """Reset password with token"""

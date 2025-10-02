@@ -31,7 +31,7 @@ const studentNavigation = [
   { name: 'Dashboard', href: '/dashboard/student', icon: HomeIcon },
   { name: 'I Miei Pacchetti', href: '/dashboard/student/packages', icon: BookOpenIcon },
   { name: 'Calendario', href: '/dashboard/student/calendar', icon: CalendarDaysIcon },
-  { name: 'Prossime Lezioni', href: '/dashboard/student/lessons', icon: ClockIcon },
+  { name: 'Lezioni', href: '/dashboard/student/lessons', icon: ClockIcon },
   { name: 'Materiali', href: '/dashboard/student/materials', icon: DocumentTextIcon },
   { name: 'Pagamenti', href: '/dashboard/student/payments', icon: CreditCardIcon },
   { name: 'Storico', href: '/dashboard/student/history', icon: ChartBarIcon },
@@ -53,8 +53,9 @@ const adminNavigation = [
   { name: 'Dashboard', href: '/dashboard/admin', icon: HomeIcon },
   // Unified user management page replaces separate 'Utenti' and 'Approvazioni' pages
   { name: 'Gestione Utenti', href: '/dashboard/admin/user-management', icon: UserGroupIcon },
+  { name: 'Lezioni', href: '/dashboard/admin/lessons', icon: CalendarDaysIcon },
   { name: 'Assegnazioni', href: '/dashboard/admin/assignments', icon: AcademicCapIcon },
-    { name: 'Pacchetti', href: '/dashboard/admin/packages', icon: BookOpenIcon },
+  { name: 'Pacchetti', href: '/dashboard/admin/packages', icon: BookOpenIcon },
   { name: 'Pagamenti', href: '/dashboard/admin/payments', icon: BanknotesIcon },
   { name: 'Analytics', href: '/dashboard/admin/analytics', icon: ChartBarIcon },
   { name: 'Impostazioni', href: '/dashboard/admin/settings', icon: Cog6ToothIcon },
@@ -123,7 +124,10 @@ function SidebarContent({ userRole, onClose }: { userRole: 'student' | 'tutor' |
       {/* Navigation */}
       <nav className="flex-1 px-6 py-6 space-y-1">
         {navigation.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          // Special logic for Dashboard - only active on exact match
+          const isActive = item.name === 'Dashboard' 
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(item.href + '/')
           
           // Special handling for Materials links - replace with Google Drive
           if (item.name === 'Materiali') {

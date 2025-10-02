@@ -11,7 +11,8 @@ import {
   BookOpenIcon,
   CalendarIcon,
   UserIcon,
-  ClockIcon
+  ClockIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline'
 import { api } from '@/lib/api'
 
@@ -64,6 +65,8 @@ export default function AssignmentsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [assignmentToDelete, setAssignmentToDelete] = useState<Assignment | null>(null)
 
   const fetchData = async () => {
     try {
@@ -142,6 +145,25 @@ export default function AssignmentsPage() {
       console.error('Error creating assignment:', err)
       setError('Errore durante la creazione dell\'assegnazione')
     }
+  }
+
+  const handleDeleteAssignment = async () => {
+    if (!assignmentToDelete) return
+
+    try {
+      await api.delete(`/api/admin/package-assignments/${assignmentToDelete.id}`)
+      await fetchData() // Ricarica i dati
+      setShowDeleteModal(false)
+      setAssignmentToDelete(null)
+    } catch (err) {
+      console.error('Error deleting assignment:', err)
+      setError('Errore nell\'eliminazione dell\'assegnazione')
+    }
+  }
+
+  const openDeleteModal = (assignment: Assignment) => {
+    setAssignmentToDelete(assignment)
+    setShowDeleteModal(true)
   }
 
   useEffect(() => {
@@ -350,10 +372,18 @@ export default function AssignmentsPage() {
                   </div>
                 </div>
                 
-                <div className="ml-4">
+                <div className="ml-4 flex flex-col items-center space-y-2">
                   <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
                     <BookOpenIcon className="w-8 h-8 text-primary" />
                   </div>
+                  <Button
+                    onClick={() => openDeleteModal(assignment)}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -370,6 +400,45 @@ export default function AssignmentsPage() {
           onSubmit={handleCreateAssignment}
           onClose={() => setShowCreateForm(false)}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && assignmentToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg shadow-xl max-w-md w-full m-4">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-lg font-semibold text-foreground">Conferma Eliminazione</h3>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-foreground-secondary mb-4">
+                Sei sicuro di voler eliminare l'assegnazione del pacchetto <strong>"{assignmentToDelete.package.name}"</strong> 
+                per lo studente <strong>{assignmentToDelete.student.firstName} {assignmentToDelete.student.lastName}</strong>?
+              </p>
+              <p className="text-sm text-red-600">
+                Questa azione non può essere annullata e tutte le ore utilizzate andranno perse.
+              </p>
+            </div>
+            
+            <div className="px-6 py-4 border-t border-border bg-gray-50">
+              <div className="flex justify-end gap-3">
+                <Button
+                  onClick={() => setShowDeleteModal(false)}
+                  variant="outline"
+                >
+                  Annulla
+                </Button>
+                <Button
+                  onClick={handleDeleteAssignment}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <TrashIcon className="w-4 h-4 mr-1" />
+                  Elimina
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

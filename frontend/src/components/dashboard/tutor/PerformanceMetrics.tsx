@@ -138,7 +138,10 @@ export function PerformanceMetrics() {
     );
   }
 
-  const formatRating = (rating: number) => {
+  const formatRating = (rating: number | null) => {
+    if (rating === null || rating === undefined) {
+      return '☆☆☆☆☆ N/A';
+    }
     const stars = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
     return `${stars} ${rating.toFixed(1)}`;
   };

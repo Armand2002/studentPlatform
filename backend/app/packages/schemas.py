@@ -5,6 +5,13 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, date
 from decimal import Decimal
+from enum import Enum
+
+class PackageRequestStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    IN_REVIEW = "in_review"
 
 # Base schemas
 class PackageBase(BaseModel):
@@ -94,3 +101,33 @@ class PackageWithTutor(Package):
 class PackagePurchaseWithDetails(PackagePurchase):
     package: Package
     links: Optional[List[PackageResourceLink]] = None
+
+
+# Package Request Schemas
+class PackageRequestBase(BaseModel):
+    requested_name: str
+    requested_subject: str
+    requested_description: str
+    requested_total_hours: int
+
+class PackageRequestCreate(PackageRequestBase):
+    pass
+
+class PackageRequest(PackageRequestBase):
+    id: int
+    tutor_id: int
+    status: PackageRequestStatus
+    reviewed_by_admin_id: Optional[int] = None
+    review_date: Optional[datetime] = None
+    admin_notes: Optional[str] = None
+    rejection_reason: Optional[str] = None
+    created_package_id: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class PackageRequestWithTutor(PackageRequest):
+    tutor_name: str
+    tutor_email: str

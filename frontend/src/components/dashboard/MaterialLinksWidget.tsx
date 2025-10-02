@@ -297,7 +297,10 @@ export default function MaterialLinksWidget({ className }: MaterialLinksWidgetPr
       {/* Quick Actions */}
       <div className="mt-6 pt-4 border-t border-border">
         <div className="flex gap-2">
-          <button className="flex-1 px-3 py-2 text-xs font-medium text-primary border border-primary/20 rounded-md hover:bg-primary/10 transition-colors">
+          <button 
+            onClick={() => window.open('https://drive.google.com/drive/folders/1Sqs2GpEk8eVTjcvfQcA5rOxmxIujxNdI?usp=drive_link', '_blank', 'noopener,noreferrer')}
+            className="flex-1 px-3 py-2 text-xs font-medium text-primary border border-primary/20 rounded-md hover:bg-primary/10 transition-colors"
+          >
             Richiedi Materiale
           </button>
           <button className="flex-1 px-3 py-2 text-xs font-medium text-foreground-secondary border border-border rounded-md hover:bg-background-secondary transition-colors">

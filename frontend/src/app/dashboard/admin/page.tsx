@@ -6,8 +6,6 @@ import { AdminOnlyAccess } from '@/components/ui/PermissionComponents'
 import { PlatformMetrics } from '@/components/dashboard/admin/PlatformMetrics'
 import { AdminAnalyticsChart } from '@/components/dashboard/admin/AdminAnalyticsChart'
 import { UserManagementWidget } from '@/components/dashboard/admin/UserManagementWidget'
-import { SystemOverviewWidget } from '@/components/dashboard/admin/SystemOverviewWidget'
-import { RevenueAnalyticsWidget } from '@/components/dashboard/admin/RevenueAnalyticsWidget'
 import { AdminQuickActionsWidget } from '@/components/dashboard/admin/AdminQuickActionsWidget'
 import { useEffect } from 'react'
 
@@ -54,19 +52,15 @@ export default function AdminDashboardPage() {
           <PlatformMetrics />
 
           {/* Analytics Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className="flex justify-center">
+            <div className="w-full max-w-6xl">
               <AdminAnalyticsChart />
-            </div>
-            <div className="lg:col-span-1">
-              <RevenueAnalyticsWidget />
             </div>
           </div>
 
           {/* Management Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             <UserManagementWidget />
-            <SystemOverviewWidget />
           </div>
 
           {/* Quick Actions */}

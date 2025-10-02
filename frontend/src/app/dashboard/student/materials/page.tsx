@@ -167,7 +167,10 @@ export default function MaterialsPage() {
               Accedi ai tuoi materiali di studio e risorse condivise
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+          <button 
+            onClick={() => window.open('https://drive.google.com/drive/folders/1Sqs2GpEk8eVTjcvfQcA5rOxmxIujxNdI?usp=drive_link', '_blank', 'noopener,noreferrer')}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
             <PlusIcon className="h-4 w-4" />
             Richiedi Materiale
           </button>

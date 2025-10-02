@@ -3,7 +3,7 @@ Import all models to make them available for migrations
 """
 # Import only from users module to avoid conflicts
 from app.users.models import User, Student, Tutor, UserSession, PasswordReset, UserRole
-from app.packages.models import Package, PackagePurchase
+from app.packages.models import Package, PackagePurchase, PackageResourceLink, PackageRequest, PackageRequestStatus
 from app.bookings.models import Booking, BookingStatus
 from app.slots.models import Slot
 # `app.files` removed; file-related models are archived. If reintroducing files, re-add import here.

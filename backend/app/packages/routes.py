@@ -13,19 +13,58 @@ from app.users import services as user_services
 
 router = APIRouter()
 
-# Package routes
+# Package routes - CREATION DISABLED FOR TUTORS
 @router.post("/", response_model=schemas.Package, tags=["Packages"])
 async def create_package(
     package_data: schemas.PackageCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Create a new package (Tutor only)"""
+    """Package creation now restricted to Admin only"""
+    raise HTTPException(
+        status_code=403, 
+        detail="Package creation is now handled exclusively by administrators. Please contact admin support for package creation requests."
+    )
+
+@router.post("/request", tags=["Packages"])
+async def request_package_creation(
+    package_request: schemas.PackageCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Allow tutors to request package creation from admin"""
     if current_user.role != UserRole.TUTOR:
-        raise HTTPException(status_code=403, detail="Tutor access required")
+        raise HTTPException(status_code=403, detail="Only tutors can request package creation")
+    
+    # Get tutor profile
+    tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor profile not found")
     
     try:
-        return await services.PackageService.create_package(db, package_data)
+        request_data = {
+            "name": package_request.name,
+            "subject": package_request.subject,
+            "description": package_request.description,
+            "total_hours": package_request.total_hours
+        }
+        
+        package_request_obj = await services.PackageRequestService.create_package_request(
+            db, tutor.id, request_data
+        )
+        
+        return {
+            "message": "Package creation request received. An administrator will review your request and create the package if approved.",
+            "request_id": package_request_obj.id,
+            "requested_package": {
+                "name": package_request.name,
+                "subject": package_request.subject,
+                "total_hours": package_request.total_hours,
+                "description": package_request.description
+            },
+            "status": "pending",
+            "next_steps": "You will be notified via email once the package is reviewed and processed."
+        }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -145,7 +184,11 @@ async def update_package(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Update package (Tutor who created it or Admin)"""
+    """Update package (Admin only)"""
+    # Only admin can modify packages
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Package modification restricted to administrators")
+    
     # Packages are immutable once created. Modifications are not allowed.
     raise HTTPException(status_code=403, detail="Packages are immutable once created")
 
@@ -155,18 +198,14 @@ async def delete_package(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Delete package (Tutor who created it or Admin)"""
+    """Delete package (Admin only)"""
     package = await services.PackageService.get_package_by_id(db, package_id)
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
 
-    # Only tutor who owns it or admin can attempt deletion
-    if current_user.role == UserRole.TUTOR:
-        tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
-        if not tutor or tutor.id != package.tutor_id:
-            raise HTTPException(status_code=403, detail="Access denied")
-    elif current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="Access denied")
+    # Only admin can delete packages
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Package deletion restricted to administrators")
 
     # Disallow deletion if package has purchases or admin assignments
     from app.packages.models import PackagePurchase
@@ -190,18 +229,14 @@ async def deactivate_package(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Soft-deactivate a package (same checks as delete but only sets is_active=False)"""
+    """Soft-deactivate a package (Admin only - sets is_active=False)"""
     package = await services.PackageService.get_package_by_id(db, package_id)
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
 
-    # Only tutor who owns it or admin can attempt deactivation
-    if current_user.role == UserRole.TUTOR:
-        tutor = await user_services.UserService.get_tutor_by_user_id(db, current_user.id)
-        if not tutor or tutor.id != package.tutor_id:
-            raise HTTPException(status_code=403, detail="Access denied")
-    elif current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="Access denied")
+    # Only admin can deactivate packages
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Package deactivation restricted to administrators")
 
     # Soft deactivate: set is_active False
     package.is_active = False

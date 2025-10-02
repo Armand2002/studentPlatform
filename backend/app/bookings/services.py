@@ -98,6 +98,51 @@ class BookingService:
         return await EnhancedBookingService.cancel_booking_with_auto_refund(
             db, booking_id, auto_refund=True
         )
+    
+    @staticmethod
+    async def get_completed_bookings_all(
+        db: Session, 
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[models.Booking]:
+        """Get all completed bookings (admin only)"""
+        return db.query(models.Booking).filter(
+            models.Booking.status == models.BookingStatus.COMPLETED
+        ).offset(skip).limit(limit).all()
+    
+    @staticmethod
+    async def get_completed_bookings(
+        db: Session, 
+        user_id: int, 
+        user_type: str,
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[models.Booking]:
+        """Get completed bookings for specific user"""
+        query = db.query(models.Booking).filter(
+            models.Booking.status == models.BookingStatus.COMPLETED
+        )
+        
+        if user_type == "student":
+            query = query.filter(models.Booking.student_id == user_id)
+        elif user_type == "tutor":
+            query = query.filter(models.Booking.tutor_id == user_id)
+        
+        return query.offset(skip).limit(limit).all()
+    
+    @staticmethod
+    async def complete_booking(db: Session, booking_id: int) -> Optional[models.Booking]:
+        """Complete a booking"""
+        booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+        if not booking:
+            return None
+        
+        booking.status = models.BookingStatus.COMPLETED
+        booking.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(booking)
+        
+        return booking
 
 
 class EnhancedBookingService:
